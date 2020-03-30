@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <vector>
 
 using namespace std;
 
@@ -19,6 +20,7 @@ void print_16bitregs() ;
 
 // global variables ( memory, registers and flags )
 unsigned char memory[2<<15] ;    // 64K memory
+vector<string> lines;
 unsigned short ax = 0 ;
 unsigned short bx = 0 ;
 unsigned short cx = 0 ;
@@ -53,37 +55,53 @@ unsigned char *pdl = (unsigned char *) &dx  ;
 int main(int argc, char* argv[])
 {
     ifstream infile(argv[1]);
+    // BURASI EN BAŞTA VARIABLE LARI INSTRUCTIONLARI VE LABEL LARI OKUMAK İÇİN
     string line = "";
     while(getline(infile, line)){
-        if(line.substr(0,3) == "mov" || line.substr(0,3) == "MOV"){
-
+        lines.push_back(line);
+    }
+    bool cont = false;
+    //BURASI PROGRAMIN ÇALIŞTIĞI YER
+    for(int i = 0; i < lines.size(); i++){
+        if(lines[i] == "code segment"){
+            cont = true;
+            continue;
         }
-        if(line.substr(0,3) == "sub" || line.substr(0,3) == "SUB"){
-
+        else if(lines[i] == "code ends"){
+            cont = false;
         }
-        if(line.substr(0,3) == "div" || line.substr(0,3) == "DIV"){
+        if(cont){
+            if(lines[i].substr(0,3) == "mov" || lines[i].substr(0,3) == "MOV"){
+                string tmp1 = line.substr(4, 2);
+                string tmp2 = line.substr(8, 2);
+                mov_reg_reg(&tmp1, &tmp2);
+            }
+            if(lines[i].substr(0,3) == "sub" || lines[i].substr(0,3) == "SUB"){
 
+            }
+            if(lines[i].substr(0,3) == "div" || lines[i].substr(0,3) == "DIV"){
+
+            }
+            if(lines[i].substr(0,3) == "mul" || lines[i].substr(0,3) == "MUL"){
+
+            }
+            if(lines[i].substr(0,3) == "add" || lines[i].substr(0,3) == "ADD"){
+
+            }
+            if(lines[i].substr(0,3) == "xor" || lines[i].substr(0,3) == "XOR"){
+
+            }
+            if(lines[i].substr(0,3) == "or" || lines[i].substr(0,3) == "OR"){
+
+            }
+            if(lines[i].substr(0,3) == "and" || lines[i].substr(0,3) == "AND"){
+
+            }
+            if(lines[i].substr(0,3) == "not" || lines[i].substr(0,3) == "NOT"){
+
+            }
+            cout << lines[i] << '\n';
         }
-        if(line.substr(0,3) == "mul" || line.substr(0,3) == "MUL"){
-
-        }
-        if(line.substr(0,3) == "add" || line.substr(0,3) == "ADD"){
-
-        }
-        if(line.substr(0,3) == "xor" || line.substr(0,3) == "XOR"){
-
-        }
-        if(line.substr(0,3) == "or" || line.substr(0,3) == "OR"){
-
-        }
-        if(line.substr(0,3) == "and" || line.substr(0,3) == "AND"){
-
-        }
-        if(line.substr(0,3) == "not" || line.substr(0,3) == "NOT"){
-
-        }
-
-        cout << line << '\n';
     }
     ax = 3 ;
     bx = 4 ;
