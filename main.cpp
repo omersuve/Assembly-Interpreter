@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -54,11 +55,23 @@ unsigned char *pdl = (unsigned char *) &dx  ;
 
 int main(int argc, char* argv[])
 {
+    map <string, int> labels;
+    map <string, int> var;
+
     ifstream infile(argv[1]);
     // BURASI EN BAŞTA VARIABLE LARI INSTRUCTIONLARI VE LABEL LARI OKUMAK İÇİN
     string line = "";
     while(getline(infile, line)){
         lines.push_back(line);
+        /*if(label){
+            labels.insert(line, lines.size()-1);
+        }
+         else if(variable){
+            var.insert(line, lines.size()-1);
+        */
+
+        //burada biri label için diğeri variable için olmak üzere 2 tane map yap
+        //key olarak string alsın value olarak da lines arrayinin indexini alsın
     }
     bool cont = false;
     //BURASI PROGRAMIN ÇALIŞTIĞI YER
