@@ -134,7 +134,7 @@ int main(int argc, char* argv[])
             mov_reg_reg(&tmp1, &tmp2);
         }
         else if(codelines[i].substr(0,3) == "sub"){
-            
+
         }
     }
     ax = 3 ;
