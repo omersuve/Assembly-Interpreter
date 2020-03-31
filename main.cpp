@@ -57,7 +57,7 @@ unsigned char *pdl = (unsigned char *) &dx  ;
 int main(int argc, char* argv[])
 {
     map <string, int> labels;
-    map <string, int> var;
+    map <string, int> vars;
     vector<string> codelines;
     int memoryIdx = 0;
 
@@ -108,10 +108,11 @@ int main(int argc, char* argv[])
                 getline(check1, var, ' ');
                 getline(check1, type, ' ');
                 getline(check1, data, ' ');
+                vars.insert({var, memoryIdx});
+
                 //memorye ASCII kodu atılacak
                 //Scanner olarak al
             }
-
         }
         cout << codelines[i] << '\n';
     }
