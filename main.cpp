@@ -78,7 +78,7 @@ int main(int argc, char* argv[])
     }
 
     bool cont = false;
-    //BURASI PROGRAMIN ÇALIŞTIĞI YER
+    //BURASI PROGRAMIN LABEL VE VARİABLE OKUDUĞU YER
     for(int i = 0; i < lines.size(); i++){
         if(lines[i] == "code segment"){
             cont = true;
@@ -93,12 +93,10 @@ int main(int argc, char* argv[])
     }
     for(int i = 0; i < codelines.size(); i++){
         if(codelines[i].substr(0,3) == "mov"){
-            string tmp1 = codelines[i].substr(4, 2);
-            string tmp2 = codelines[i].substr(8, 2);
-            mov_reg_reg(&tmp1, &tmp2);
             memoryIdx += 6;
         }
         else if(codelines[i] == "int20h"){
+            memoryIdx += 6;
             for(int j = i+1; j < codelines.size(); j++){
                 string tmp = codelines[j];
                 string var;
@@ -126,6 +124,18 @@ int main(int argc, char* argv[])
             }
         }
         cout << codelines[i] << '\n';
+    }
+
+    //ASIL KOD BURADAN BAŞLIYOR
+    for(int i = 0; i < codelines.size(); i++){
+        if(codelines[i].substr(0,3) == "mov") {
+            string tmp1 = codelines[i].substr(4, 2);
+            string tmp2 = codelines[i].substr(8, 2);
+            mov_reg_reg(&tmp1, &tmp2);
+        }
+        else if(codelines[i].substr(0,3) == "sub"){
+            
+        }
     }
     ax = 3 ;
     bx = 4 ;
