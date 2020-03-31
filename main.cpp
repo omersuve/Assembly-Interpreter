@@ -103,12 +103,15 @@ int main(int argc, char* argv[])
                 string tmp = codelines[j];
                 string var;
                 string type;
-                string data;
+                string info;
+                unsigned char data;
                 stringstream check1(tmp);
                 getline(check1, var, ' ');
                 getline(check1, type, ' ');
-                getline(check1, data, ' ');
+                getline(check1, info, ' ');
                 vars.insert({var, memoryIdx});
+                //data = info;
+                memory[memoryIdx] = data;
 
                 //memorye ASCII kodu atılacak
                 //Scanner olarak al
