@@ -21,7 +21,7 @@ template <class regtype>  void div_reg(regtype *preg)  ;
 void print_16bitregs() ;
 
 // global variables ( memory, registers and flags )
-unsigned char memory[2<<15] ;    // 64K memory
+unsigned char memory[2<<15];    // 64K memory
 vector<string> lines;
 unsigned short ax = 0 ;
 unsigned short bx = 0 ;
@@ -110,9 +110,17 @@ int main(int argc, char* argv[])
                 getline(check1, type, ' ');
                 getline(check1, info, ' ');
                 vars.insert({var, memoryIdx});
-                //data = info;
-                memory[memoryIdx] = data;
-
+                if(type == "db"){
+                    data = info;
+                    memory[memoryIdx] = data;
+                    memoryIdx++;
+                }else if(type == "dw"){
+                    data = info;
+                    memory[memoryIdx] = data;
+                    memoryIdx+=2;
+                }else{
+                    
+                }
                 //memorye ASCII kodu atılacak
                 //Scanner olarak al
             }
