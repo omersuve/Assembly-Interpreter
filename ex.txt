@@ -1,0 +1,7 @@
+mov ax, bx
+code segment
+mov ax, bx
+add bx, cx
+sub cx, dx
+code ends
+sub dx, cx

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <map>
+#include <sstream>
 
 using namespace std;
 
@@ -91,7 +92,7 @@ int main(int argc, char* argv[])
         }
     }
     for(int i = 0; i < codelines.size(); i++){
-        if(codelines[i].substr(0,3) == "mov" || codelines[i].substr(0,3) == "MOV"){
+        if(codelines[i].substr(0,3) == "mov"){
             string tmp1 = codelines[i].substr(4, 2);
             string tmp2 = codelines[i].substr(8, 2);
             mov_reg_reg(&tmp1, &tmp2);
@@ -100,7 +101,10 @@ int main(int argc, char* argv[])
         else if(codelines[i] == "int20h"){
             for(int j = i+1; j < codelines.size(); j++){
                 string tmp = codelines[j];
+                stringstream check1(tmp);
+
                 //memorye ASCII kodu atılacak
+                //Scanner olarak al
             }
 
         }
