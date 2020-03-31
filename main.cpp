@@ -101,8 +101,13 @@ int main(int argc, char* argv[])
         else if(codelines[i] == "int20h"){
             for(int j = i+1; j < codelines.size(); j++){
                 string tmp = codelines[j];
+                string var;
+                string type;
+                string data;
                 stringstream check1(tmp);
-
+                getline(check1, var, ' ');
+                getline(check1, type, ' ');
+                getline(check1, data, ' ');
                 //memorye ASCII kodu atılacak
                 //Scanner olarak al
             }
