@@ -58,6 +58,7 @@ int main(int argc, char* argv[])
     map <string, int> labels;
     map <string, int> var;
     vector<string> codelines;
+    int memoryIdx = 0;
 
     ifstream infile(argv[1]);
     // BURASI EN BAŞTA VARIABLE LARI INSTRUCTIONLARI VE LABEL LARI OKUMAK İÇİN
@@ -94,9 +95,13 @@ int main(int argc, char* argv[])
             string tmp1 = codelines[i].substr(4, 2);
             string tmp2 = codelines[i].substr(8, 2);
             mov_reg_reg(&tmp1, &tmp2);
+            memoryIdx += 6;
         }
-        else if(lines[i] == "int20h"){
-
+        else if(codelines[i] == "int20h"){
+            for(int j = i+1; j < codelines.size(); j++){
+                string tmp = codelines[j];
+                //memorye ASCII kodu atılacak
+            }
 
         }
         cout << codelines[i] << '\n';
