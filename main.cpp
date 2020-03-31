@@ -91,39 +91,37 @@ int main(int argc, char* argv[])
             codelines.push_back(lines[i]);
         }
     }
-    for(int i = 0; i < codelines.size(); i++){
+    int i = 0;
+    while(codelines[i] != "int20h") {
         if(codelines[i].substr(0,3) == "mov"){
             memoryIdx += 6;
         }
-        else if(codelines[i] == "int20h"){
-            memoryIdx += 6;
-            for(int j = i+1; j < codelines.size(); j++){
-                string tmp = codelines[j];
-                string var;
-                string type;
-                string info;
-                unsigned char data;
-                stringstream check1(tmp);
-                getline(check1, var, ' ');
-                getline(check1, type, ' ');
-                getline(check1, info, ' ');
-                vars.insert({var, memoryIdx});
-                if(type == "db"){
-                    data = info;
-                    memory[memoryIdx] = data;
-                    memoryIdx++;
-                }else if(type == "dw"){
-                    data = info;
-                    memory[memoryIdx] = data;
-                    memoryIdx+=2;
-                }else{
+    }
+    memoryIdx += 6;
+    for(int j = i+1; j < codelines.size(); j++){
+        string tmp = codelines[j];
+        string var;
+        string type;
+        string info;
+        unsigned char data;
+        stringstream check1(tmp);
+        getline(check1, var, ' ');
+        getline(check1, type, ' ');
+        getline(check1, info, ' ');
+        vars.insert({var, memoryIdx});
+        if(type == "db"){
+            data = info;
+            memory[memoryIdx] = data;
+            memoryIdx++;
+        }else if(type == "dw"){
+            data = info;
+            memory[memoryIdx] = data;
+            memoryIdx+=2;
+        }else{
 
-                }
-                //memorye ASCII kodu atılacak
-                //Scanner olarak al
-            }
         }
-        cout << codelines[i] << '\n';
+        //memorye ASCII kodu atılacak
+        //Scanner olarak al
     }
 
     //ASIL KOD BURADAN BAŞLIYOR
