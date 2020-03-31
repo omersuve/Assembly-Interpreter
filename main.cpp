@@ -57,6 +57,7 @@ int main(int argc, char* argv[])
 {
     map <string, int> labels;
     map <string, int> var;
+    vector<string> codelines;
 
     ifstream infile(argv[1]);
     // BURASI EN BAŞTA VARIABLE LARI INSTRUCTIONLARI VE LABEL LARI OKUMAK İÇİN
@@ -73,6 +74,7 @@ int main(int argc, char* argv[])
         //burada biri label için diğeri variable için olmak üzere 2 tane map yap
         //key olarak string alsın value olarak da lines arrayinin indexini alsın
     }
+
     bool cont = false;
     //BURASI PROGRAMIN ÇALIŞTIĞI YER
     for(int i = 0; i < lines.size(); i++){
@@ -84,37 +86,20 @@ int main(int argc, char* argv[])
             cont = false;
         }
         if(cont){
-            if(lines[i].substr(0,3) == "mov" || lines[i].substr(0,3) == "MOV"){
-                string tmp1 = line.substr(4, 2);
-                string tmp2 = line.substr(8, 2);
-                mov_reg_reg(&tmp1, &tmp2);
-            }
-            if(lines[i].substr(0,3) == "sub" || lines[i].substr(0,3) == "SUB"){
-
-            }
-            if(lines[i].substr(0,3) == "div" || lines[i].substr(0,3) == "DIV"){
-
-            }
-            if(lines[i].substr(0,3) == "mul" || lines[i].substr(0,3) == "MUL"){
-
-            }
-            if(lines[i].substr(0,3) == "add" || lines[i].substr(0,3) == "ADD"){
-
-            }
-            if(lines[i].substr(0,3) == "xor" || lines[i].substr(0,3) == "XOR"){
-
-            }
-            if(lines[i].substr(0,3) == "or" || lines[i].substr(0,3) == "OR"){
-
-            }
-            if(lines[i].substr(0,3) == "and" || lines[i].substr(0,3) == "AND"){
-
-            }
-            if(lines[i].substr(0,3) == "not" || lines[i].substr(0,3) == "NOT"){
-
-            }
-            cout << lines[i] << '\n';
+            codelines.push_back(lines[i]);
         }
+    }
+    for(int i = 0; i < codelines.size(); i++){
+        if(codelines[i].substr(0,3) == "mov" || codelines[i].substr(0,3) == "MOV"){
+            string tmp1 = codelines[i].substr(4, 2);
+            string tmp2 = codelines[i].substr(8, 2);
+            mov_reg_reg(&tmp1, &tmp2);
+        }
+        else if(lines[i] == "int20h"){
+
+
+        }
+        cout << codelines[i] << '\n';
     }
     ax = 3 ;
     bx = 4 ;
