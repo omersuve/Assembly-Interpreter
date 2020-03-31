@@ -3,5 +3,6 @@ code segment
 mov ax, bx
 add bx, cx
 sub cx, dx
+int 20h
 code ends
 sub dx, cx

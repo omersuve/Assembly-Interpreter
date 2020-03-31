@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include "cmath"
 
 using namespace std;
 
@@ -18,6 +19,7 @@ template <class regtype>  void xor_reg_reg(regtype *preg1, regtype *preg2)  ;
 template  <class regtype> void and_reg_reg(regtype *preg1, regtype *preg2)  ;
 template <class regtype>  void mul_reg(regtype *preg)  ;
 template <class regtype>  void div_reg(regtype *preg)  ;
+unsigned char hex2dec(string hex);
 void print_16bitregs() ;
 
 // global variables ( memory, registers and flags )
@@ -61,6 +63,10 @@ int main(int argc, char* argv[])
     vector<string> codelines;
     int memoryIdx = 0;
 
+    string s = "6c";
+    cout << hex2dec(s) << endl;
+
+
     ifstream infile(argv[1]);
     // BURASI EN BAŞTA VARIABLE LARI INSTRUCTIONLARI VE LABEL LARI OKUMAK İÇİN
     string line = "";
@@ -92,10 +98,11 @@ int main(int argc, char* argv[])
         }
     }
     int i = 0;
-    while(codelines[i] != "int20h") {
+    while(codelines[i] != "int 20h") {
         if(codelines[i].substr(0,3) == "mov"){
             memoryIdx += 6;
         }
+        i++;
     }
     memoryIdx += 6;
     for(int j = i+1; j < codelines.size(); j++){
@@ -110,11 +117,11 @@ int main(int argc, char* argv[])
         getline(check1, info, ' ');
         vars.insert({var, memoryIdx});
         if(type == "db"){
-            data = info;
+            //data = info;
             memory[memoryIdx] = data;
             memoryIdx++;
         }else if(type == "dw"){
-            data = info;
+            //data = info;
             memory[memoryIdx] = data;
             memoryIdx+=2;
         }else{
@@ -245,6 +252,22 @@ void print_hex(datatype x)
         printf("%02x\n",x);
     else
         printf("%04x\n",x);
+}
+
+unsigned char hex2dec(string hex)
+{
+    unsigned char result = 0;
+    for (int i=0; i<hex.length(); i++) {
+        if (hex[i]>=48 && hex[i]<=57)
+        {
+            result += (hex[i]-48)*pow(16,hex.length()-i-1);
+        } else if (hex[i]>=65 && hex[i]<=70) {
+            result += (hex[i]-55)*pow(16,hex.length( )-i-1);
+        } else if (hex[i]>=97 && hex[i]<=102) {
+            result += (hex[i]-87)*pow(16,hex.length()-i-1);
+        }
+    }
+    return result;
 }
 
 void print_16bitregs()
