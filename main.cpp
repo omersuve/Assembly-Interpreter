@@ -119,7 +119,7 @@ int main(int argc, char* argv[])
                     memory[memoryIdx] = data;
                     memoryIdx+=2;
                 }else{
-                    
+
                 }
                 //memorye ASCII kodu atılacak
                 //Scanner olarak al
