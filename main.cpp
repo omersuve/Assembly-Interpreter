@@ -11,6 +11,7 @@ using namespace std;
 template <class datatype> void print_bits(datatype x) ;
 template <class datatype> void print_hex(datatype x) ;
 template <class regtype>  void mov_reg_reg(regtype *preg1,regtype *preg2)  ;
+template <class regtype>  void mov_reg_reg2(regtype *preg1,regtype preg2)  ;
 template <class regtype>  void add_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void sub_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void not_reg(regtype *preg)  ;
@@ -84,6 +85,9 @@ int main(int argc, char* argv[])
 
     bool cont = false;
     //BURASI PROGRAMIN LABEL VE VARİABLE OKUDUĞU YER
+
+    //TODO: EN BAŞA VİRGÜLLERİ BOŞLUĞA ÇEVİRECEK BİR KOD YAZ
+
     for(int i = 0; i < lines.size(); i++){
         if(lines[i] == "code segment"){
             cont = true;
@@ -135,10 +139,25 @@ int main(int argc, char* argv[])
 
     //ASIL KOD BURADAN BAŞLIYOR
     for(int i = 0; i < codelines.size(); i++){
-        if(codelines[i].substr(0,3) == "mov") {
-            string tmp1 = codelines[i].substr(4, 2);
-            string tmp2 = codelines[i].substr(8, 2);
-            mov_reg_reg(&tmp1, &tmp2);
+        string tmp = codelines[i];
+        string type;
+        string first;
+        string sec;
+        string var;
+        stringstream check1(tmp);
+        getline(check1, type, ' ');
+        if(type == "mov") {
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+            getline(check1, var, ' ');
+            //C_STR FONKSİYONU ÇOK İŞE YARIYOR , DİREKT OLARAK ADRESİ DÖNÜYOR
+            map<string, int>::iterator it ;
+            it = vars.find(var);
+            if(it == vars.end())
+                cout << "Key-value pair not present in map" ;
+            else
+                mov_reg_reg2(first.c_str(), it->second);
+            //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
         else if(codelines[i].substr(0,3) == "sub"){
 
@@ -186,6 +205,12 @@ template <class regtype>
 void mov_reg_reg(regtype *preg1,regtype *preg2)
 {
     *preg1 = *preg2 ;
+}
+
+template <class regtype>
+void mov_reg_reg2(regtype *preg1,regtype preg2)
+{
+    *preg1 = preg2 ;
 }
 
 template  <class regtype>
