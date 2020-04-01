@@ -4,5 +4,6 @@ mov ax, bx
 add bx, cx
 sub cx, dx
 int 20h
+v1 dw 656ch
 code ends
 sub dx, cx

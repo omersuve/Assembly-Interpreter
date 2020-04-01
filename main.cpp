@@ -63,12 +63,11 @@ int main(int argc, char* argv[])
     vector<string> codelines;
     int memoryIdx = 0;
 
-    string s = "6c";
+    string s = "66";
     cout << hex2dec(s) << endl;
 
 
     ifstream infile(argv[1]);
-    // BURASI EN BAŞTA VARIABLE LARI INSTRUCTIONLARI VE LABEL LARI OKUMAK İÇİN
     string line = "";
     while(getline(infile, line)){
         lines.push_back(line);
@@ -110,22 +109,25 @@ int main(int argc, char* argv[])
         string var;
         string type;
         string info;
-        unsigned char data;
         stringstream check1(tmp);
         getline(check1, var, ' ');
         getline(check1, type, ' ');
         getline(check1, info, ' ');
         vars.insert({var, memoryIdx});
         if(type == "db"){
-            //data = info;
+            info = info.substr(0, info.size()-1);
+            unsigned char data = hex2dec(info);
             memory[memoryIdx] = data;
             memoryIdx++;
         }else if(type == "dw"){
-            //data = info;
-            memory[memoryIdx] = data;
+            info = info.substr(0, info.size()-1);
+            unsigned char data1 = hex2dec(info.substr(0,2));
+            unsigned char data2 = hex2dec(info.substr(2,2));
+            memory[memoryIdx] = data1;
+            memory[memoryIdx+1] = data2;
             memoryIdx+=2;
         }else{
-
+            cout << "error" << endl;
         }
         //memorye ASCII kodu atılacak
         //Scanner olarak al
@@ -258,8 +260,7 @@ unsigned char hex2dec(string hex)
 {
     unsigned char result = 0;
     for (int i=0; i<hex.length(); i++) {
-        if (hex[i]>=48 && hex[i]<=57)
-        {
+        if (hex[i]>=48 && hex[i]<=57){
             result += (hex[i]-48)*pow(16,hex.length()-i-1);
         } else if (hex[i]>=65 && hex[i]<=70) {
             result += (hex[i]-55)*pow(16,hex.length( )-i-1);
