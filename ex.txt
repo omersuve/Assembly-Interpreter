@@ -1,6 +1,6 @@
 mov ax, bx
 code segment
-mov ax, bx
+mov bx,offset v1
 add bx, cx
 sub cx, dx
 int 20h

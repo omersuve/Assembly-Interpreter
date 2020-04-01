@@ -4,6 +4,7 @@
 #include <map>
 #include <sstream>
 #include "cmath"
+#include <algorithm>
 
 using namespace std;
 
@@ -87,6 +88,14 @@ int main(int argc, char* argv[])
     //BURASI PROGRAMIN LABEL VE VARİABLE OKUDUĞU YER
 
     //TODO: EN BAŞA VİRGÜLLERİ BOŞLUĞA ÇEVİRECEK BİR KOD YAZ
+    for(int i = 0; i < lines.size(); i++){
+        for(int j = 0; j < lines[i].size(); j++){
+            if(lines[i].at(j) == ','){
+                lines[i][j] = ' ';
+            }
+        }
+    }
+
 
     for(int i = 0; i < lines.size(); i++){
         if(lines[i] == "code segment"){
@@ -99,7 +108,9 @@ int main(int argc, char* argv[])
         if(cont){
             codelines.push_back(lines[i]);
         }
+        cout << lines[i] << endl;
     }
+
     int i = 0;
     while(codelines[i] != "int 20h") {
         if(codelines[i].substr(0,3) == "mov"){
@@ -122,6 +133,7 @@ int main(int argc, char* argv[])
             info = info.substr(0, info.size()-1);
             unsigned char data = hex2dec(info);
             memory[memoryIdx] = data;
+            vars.insert({var, memoryIdx});
             memoryIdx++;
         }else if(type == "dw"){
             info = info.substr(0, info.size()-1);
@@ -129,6 +141,7 @@ int main(int argc, char* argv[])
             unsigned char data2 = hex2dec(info.substr(2,2));
             memory[memoryIdx] = data1;
             memory[memoryIdx+1] = data2;
+            vars.insert({var, memoryIdx});
             memoryIdx+=2;
         }else{
             cout << "error" << endl;
@@ -154,9 +167,10 @@ int main(int argc, char* argv[])
             map<string, int>::iterator it ;
             it = vars.find(var);
             if(it == vars.end())
-                cout << "Key-value pair not present in map" ;
-            else
-                mov_reg_reg2(first.c_str(), it->second);
+                cout << "Key-value pair not present in map" << endl;
+            else{
+                //mov_reg_reg2(first.c_str(), it->second);
+            }
             //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
         else if(codelines[i].substr(0,3) == "sub"){
