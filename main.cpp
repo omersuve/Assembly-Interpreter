@@ -132,6 +132,7 @@ int main(int argc, char* argv[])
         if(type == "db"){
             info = info.substr(0, info.size()-1);
             unsigned char data = hex2dec(info);
+            vars.insert(pair<string, int> (var + "1", memoryIdx));
             memory[memoryIdx] = data;
             vars.insert({var, memoryIdx});
             memoryIdx++;
@@ -139,6 +140,7 @@ int main(int argc, char* argv[])
             info = info.substr(0, info.size()-1);
             unsigned char data1 = hex2dec(info.substr(0,2));
             unsigned char data2 = hex2dec(info.substr(2,2));
+            vars.insert(pair<string, int> (var + "2", memoryIdx));
             memory[memoryIdx] = data1;
             memory[memoryIdx+1] = data2;
             vars.insert({var, memoryIdx});
