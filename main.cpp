@@ -12,7 +12,7 @@ using namespace std;
 template <class datatype> void print_bits(datatype x) ;
 template <class datatype> void print_hex(datatype x) ;
 template <class regtype>  void mov_reg_reg(regtype *preg1,regtype *preg2)  ;
-template <class regtype>  void mov_reg_reg2(regtype *preg1,regtype preg2)  ;
+template <class regtype>  void mov_reg_reg2(regtype *preg1,unsigned char c)  ;
 template <class regtype>  void add_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void sub_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void not_reg(regtype *preg)  ;
@@ -22,6 +22,8 @@ template  <class regtype> void and_reg_reg(regtype *preg1, regtype *preg2)  ;
 template <class regtype>  void mul_reg(regtype *preg)  ;
 template <class regtype>  void div_reg(regtype *preg)  ;
 unsigned char hex2dec(string hex);
+template <class regtype>  void inc_reg(regtype *preg);
+template <class regtype>  void dec_reg(regtype *preg);
 void print_16bitregs() ;
 
 // global variables ( memory, registers and flags )
@@ -158,7 +160,7 @@ int main(int argc, char* argv[])
         string type;
         string first;
         string sec;
-        string var;
+        string var = "";
         stringstream check1(tmp);
         getline(check1, type, ' ');
         if(type == "mov") {
@@ -166,17 +168,38 @@ int main(int argc, char* argv[])
             getline(check1, sec, ' ');
             getline(check1, var, ' ');
             //C_STR FONKSİYONU ÇOK İŞE YARIYOR , DİREKT OLARAK ADRESİ DÖNÜYOR
-            map<string, int>::iterator it ;
-            it = vars.find(var);
-            if(it == vars.end())
-                cout << "Key-value pair not present in map" << endl;
-            else{
-                //mov_reg_reg2(first.c_str(), it->second);
+            if(var != ""){
+                //OFFSET İSE
+                map<string, int>::iterator it ;
+                it = vars.find(var);
+                if(it == vars.end())
+                    cout << "Key-value pair not present in map" << endl;
+                else{
+                    //mov_reg_reg2(first.c_str(), it->second);
+                }
+            }else{
+                string s = sec.substr(0,sec.size()-1);
+                if(sec.at(sec.size()-1) == 'h')
+                    mov_reg_reg2(first.c_str(), hex2dec(s));
+                else
+                    mov_reg_reg(first.c_str(), sec.c_str());
             }
+
             //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
-        else if(codelines[i].substr(0,3) == "sub"){
-
+        else if(type == "add"){
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+            unsigned char c = hex2dec(sec.substr(0,sec.size()-1));
+            add_reg(first.c_str(),c);
+        }
+        else if(type == "inc"){
+            getline(check1, first, ' ');
+            inc_reg(first.c_str());
+        }
+        else if(type == "dec"){
+            getline(check1, first, ' ');
+            dec_reg(first.c_str());
         }
     }
     ax = 3 ;
@@ -220,25 +243,33 @@ int main(int argc, char* argv[])
 template <class regtype>
 void mov_reg_reg(regtype *preg1,regtype *preg2)
 {
-    *preg1 = *preg2 ;
+    preg1 = preg2 ;
 }
 
 template <class regtype>
-void mov_reg_reg2(regtype *preg1,regtype preg2)
+void mov_reg_reg2(regtype *preg1,unsigned char c)
 {
-    *preg1 = preg2 ;
+    preg1 = c ;
 }
 
 template  <class regtype>
 void add_reg(regtype *preg, unsigned char c)
 {
-    *preg = *preg + c;
+    preg = preg + c;
 }
 
 template  <class regtype>
 void sub_reg(regtype *preg, unsigned char c)
 {
     *preg = *preg - c;
+}
+
+template <class regtype>  void inc_reg(regtype *preg){
+    *preg ++;
+}
+
+template <class regtype>  void dec_reg(regtype *preg){
+    *preg --;
 }
 
 template  <class regtype>
