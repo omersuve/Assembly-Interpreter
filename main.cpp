@@ -132,10 +132,88 @@ int main(int argc, char* argv[])
         else if(codelines[i].substr(0,3) == "inc"){
             memoryIdx += 6;
         }
-        else if(codelines[i].substr(0,3) == "add"){
+        else if(codelines[i].substr(0,3) == "sub"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "mul"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "div"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "xor"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "or"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "and"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "not"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "rcl"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "rcr"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "shl"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "shr"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "push"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "pop"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "nop"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "cmp"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jz"){
             memoryIdx += 6;
         }
         else if(codelines[i].substr(0,3) == "jnz"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jn"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jne"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "ja"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jae"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jb"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jbe"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jnae"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jnb"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jnbe"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jnc"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jc"){
             memoryIdx += 6;
         }
         else if(codelines[i] == "int 21h"){
