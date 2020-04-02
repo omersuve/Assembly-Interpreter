@@ -12,7 +12,8 @@ using namespace std;
 template <class datatype> void print_bits(datatype x) ;
 template <class datatype> void print_hex(datatype x) ;
 template <class regtype>  void mov_reg_reg(regtype *preg1,regtype *preg2)  ;
-template <class regtype>  void mov_reg_reg2(regtype *preg1,unsigned char c)  ;
+template <class regtype>  void mov_reg_offset(regtype *preg1, int a)  ;
+template <class regtype>  void mov_reg_hex(regtype *preg1,unsigned char c)  ;
 template <class regtype>  void add_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void sub_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void not_reg(regtype *preg)  ;
@@ -167,7 +168,6 @@ int main(int argc, char* argv[])
             getline(check1, first, ' ');
             getline(check1, sec, ' ');
             getline(check1, var, ' ');
-            //C_STR FONKSİYONU ÇOK İŞE YARIYOR , DİREKT OLARAK ADRESİ DÖNÜYOR
             if(var != ""){
                 //OFFSET İSE
                 map<string, int>::iterator it ;
@@ -175,15 +175,36 @@ int main(int argc, char* argv[])
                 if(it == vars.end())
                     cout << "Key-value pair not present in map" << endl;
                 else{
-                    //mov_reg_reg2(first.c_str(), it->second);
+                    if(first == "ax"){
+                        mov_reg_offset(pax, memoryIdx);
+                    }
+                    else if(first == "bx"){
+                        mov_reg_offset(pbx, memoryIdx);
+                    }
+                    else if(first == "cx"){
+                        mov_reg_offset(pcx, memoryIdx);
+                    }
                 }
             }else{
-                string s = sec.substr(0,sec.size()-1);
-                if(sec.at(sec.size()-1) == 'h')
-                    mov_reg_reg2(first.c_str(), hex2dec(s));
-                else
-                    mov_reg_reg(first.c_str(), sec.c_str());
+                if(first == "ax"){
+                    string s = sec.substr(0,sec.size()-1);
+                    if(sec.at(sec.size()-1) == 'h'){
+                        mov_reg_hex(pax, hex2dec(s));
+                    }
+                    else{
+                        if(sec == "bx"){
+                            mov_reg_reg(pax, pbx);
+                        }else if(sec == "cx"){
+                            mov_reg_reg(pax, pcx);
+                        }
+                    }
+                }
+                else if(first == "bx"){
+
+                }
+
             }
+
 
             //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
@@ -241,15 +262,21 @@ int main(int argc, char* argv[])
 }
 
 template <class regtype>
-void mov_reg_reg(regtype *preg1,regtype *preg2)
+void mov_reg_reg(regtype *preg1, regtype *preg2)
 {
-    preg1 = preg2 ;
+    *preg1 = *preg2 ;
 }
 
 template <class regtype>
-void mov_reg_reg2(regtype *preg1,unsigned char c)
+void mov_reg_hex(regtype *preg1,unsigned char c)
 {
-    preg1 = c ;
+    *preg1 = c ;
+}
+
+template <class regtype>
+void mov_reg_offset(regtype *preg1, int a)
+{
+    *preg1 = a ;
 }
 
 template  <class regtype>
