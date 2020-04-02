@@ -176,13 +176,13 @@ int main(int argc, char* argv[])
                     cout << "Key-value pair not present in map" << endl;
                 else{
                     if(first == "ax"){
-                        mov_reg_offset(pax, memoryIdx);
+                        mov_reg_offset(pax, it->second);
                     }
                     else if(first == "bx"){
-                        mov_reg_offset(pbx, memoryIdx);
+                        mov_reg_offset(pbx, it->second);
                     }
                     else if(first == "cx"){
-                        mov_reg_offset(pcx, memoryIdx);
+                        mov_reg_offset(pcx, it->second);
                     }
                 }
             }else{
@@ -190,6 +190,12 @@ int main(int argc, char* argv[])
                     string s = sec.substr(0,sec.size()-1);
                     if(sec.at(sec.size()-1) == 'h'){
                         mov_reg_hex(pax, hex2dec(s));
+                    }
+                    else if(vars.count(sec)){
+                        map<string, int>::iterator it ;
+                        it = vars.find(sec);
+                        if(it != vars.end())
+                            mov_reg_hex(pax, memory[it->second]);
                     }
                     else{
                         if(sec == "bx"){
