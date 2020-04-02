@@ -6,6 +6,7 @@
 #include "cmath"
 #include <algorithm>
 
+
 using namespace std;
 
 // prototypes
@@ -91,7 +92,8 @@ int main(int argc, char* argv[])
     bool cont = false;
     //BURASI PROGRAMIN LABEL VE VARİABLE OKUDUĞU YER
 
-    //TODO: EN BAŞA VİRGÜLLERİ BOŞLUĞA ÇEVİRECEK BİR KOD YAZ
+    //TODO: BAŞTAKİ VE SONDAKİ FAZLA BOŞLUKLARI SİLECEK KOD YAZ!!
+
     for(int i = 0; i < lines.size(); i++){
         for(int j = 0; j < lines[i].size(); j++){
             if(lines[i].at(j) == ','){
@@ -120,9 +122,32 @@ int main(int argc, char* argv[])
         if(codelines[i].substr(0,3) == "mov"){
             memoryIdx += 6;
         }
+        else if(codelines[i].substr(0,3) == "add"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "dec"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "inc"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "add"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i].substr(0,3) == "jnz"){
+            memoryIdx += 6;
+        }
+        else if(codelines[i] == "int 21h"){
+            memoryIdx += 6;
+        }
+        else{
+            i++;
+            continue;
+        }
         i++;
     }
     memoryIdx += 6;
+
     for(int j = i+1; j < codelines.size(); j++){
         string tmp = codelines[j];
         string var;
@@ -213,7 +238,7 @@ int main(int argc, char* argv[])
                 else if(first == "bx"){
                 }
             }
-            
+
             //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
         else if(type == "add"){
