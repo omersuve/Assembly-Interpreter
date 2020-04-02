@@ -14,6 +14,7 @@ template <class datatype> void print_hex(datatype x) ;
 template <class regtype>  void mov_reg_reg(regtype *preg1,regtype *preg2)  ;
 template <class regtype>  void mov_reg_offset(regtype *preg1, int a)  ;
 template <class regtype>  void mov_reg_hex(regtype *preg1,unsigned char c)  ;
+template <class regtype>  void mov_reg_dec(regtype *preg1,int a)  ;
 template <class regtype>  void add_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void sub_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void not_reg(regtype *preg)  ;
@@ -203,15 +204,16 @@ int main(int argc, char* argv[])
                         }else if(sec == "cx"){
                             mov_reg_reg(pax, pcx);
                         }
+                            //SADECE SAYI İSE
+                        else{
+                            mov_reg_dec(pax, stoi(sec));
+                        }
                     }
                 }
                 else if(first == "bx"){
-
                 }
-
             }
-
-
+            
             //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
         else if(type == "add"){
@@ -277,6 +279,12 @@ template <class regtype>
 void mov_reg_hex(regtype *preg1,unsigned char c)
 {
     *preg1 = c ;
+}
+
+template <class regtype>
+void mov_reg_dec(regtype *preg1, int a)
+{
+    *preg1 = a ;
 }
 
 template <class regtype>
