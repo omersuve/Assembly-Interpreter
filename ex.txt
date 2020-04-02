@@ -1,5 +1,5 @@
 code segment
-mov bx,offset dat2
+   mov bx,offset dat2
 mov bp,bx
 dec bp
 add bx,2h

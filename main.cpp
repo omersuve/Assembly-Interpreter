@@ -28,6 +28,7 @@ unsigned char hex2dec(string hex);
 template <class regtype>  void inc_reg(regtype *preg);
 template <class regtype>  void dec_reg(regtype *preg);
 void print_16bitregs() ;
+string erase(string s);
 
 // global variables ( memory, registers and flags )
 unsigned char memory[2<<15];    // 64K memory
@@ -77,7 +78,7 @@ int main(int argc, char* argv[])
     ifstream infile(argv[1]);
     string line = "";
     while(getline(infile, line)){
-        lines.push_back(line);
+        lines.push_back(erase(line));
         /*if(label){
             labels.insert(line, lines.size()-1);
         }
@@ -213,8 +214,8 @@ int main(int argc, char* argv[])
                 }
             }else{
                 if(first == "ax"){
-                    string s = sec.substr(0,sec.size()-1);
                     if(sec.at(sec.size()-1) == 'h'){
+                        string s = sec.substr(0,sec.size()-1);
                         mov_reg_hex(pax, hex2dec(s));
                     }
                     else if(vars.count(sec)){
@@ -236,6 +237,16 @@ int main(int argc, char* argv[])
                     }
                 }
                 else if(first == "bx"){
+
+                }
+                else if(first == "w[bx]"){
+                    if(sec.at(sec.size()-1) == 'h'){
+                        string s1 = sec.substr(0,2);
+                        string s2 = sec.substr(2,4);
+                        int tmp = bx;
+                        memory[tmp] = hex2dec(s1);
+                        memory[tmp+1] = hex2dec(s2);
+                    }
                 }
             }
 
@@ -372,6 +383,34 @@ template  <class regtype>
 void not_reg(regtype *preg)
 {
     *preg = ~(*preg);
+}
+
+string erase(string s){
+    bool a = false;
+    for(int i = 0; i < s.size()-1; i++){
+        if(s.at(i) == ' ' && a == false){
+            s.erase(s.begin() + i);
+        }else
+            break;
+        if(s.at(i+1) != ' '){
+            s.erase(s.begin() + i - 1);
+            a = true;
+            break;
+        }
+    }
+    bool b = false;
+    for(int i = s.size()-1; i > 0 ; i--){
+        if(s.at(i) == ' ' && b == false){
+            s.erase(s.begin() + s.size()-i);
+        } else
+            break;
+        if(s.at(i-1) != ' '){
+            s.erase(s.begin() +  s.size() - i + 1);
+            b = true;
+            break;
+        }
+    }
+    return s;
 }
 
 template <class datatype>
