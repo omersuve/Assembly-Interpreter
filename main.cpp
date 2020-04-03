@@ -37,11 +37,18 @@ unsigned short ax = 0 ;
 unsigned short bx = 0 ;
 unsigned short cx = 0 ;
 unsigned short dx = 0 ;
-unsigned short PC = 0 ;
 unsigned short di = 0 ;
 unsigned short bp = 0 ;
 unsigned short si = 0 ;
 unsigned short sp = (2<<15)-2 ;
+unsigned short ah = 0 ;
+unsigned short al = 0 ;
+unsigned short bh = 0 ;
+unsigned short bl = 0 ;
+unsigned short ch = 0 ;
+unsigned short cl = 0 ;
+unsigned short dh = 0 ;
+unsigned short dl = 0 ;
 
 bool     zf       ;              // zero flag
 bool     sf       ;              // sign flag
@@ -144,7 +151,7 @@ int main(int argc, char* argv[])
         else if(codelines[i].substr(0,3) == "xor"){
             memoryIdx += 6;
         }
-        else if(codelines[i].substr(0,3) == "or"){
+        else if(codelines[i].substr(0,2) == "or"){
             memoryIdx += 6;
         }
         else if(codelines[i].substr(0,3) == "and"){
@@ -165,7 +172,7 @@ int main(int argc, char* argv[])
         else if(codelines[i].substr(0,3) == "shr"){
             memoryIdx += 6;
         }
-        else if(codelines[i].substr(0,3) == "push"){
+        else if(codelines[i].substr(0,4) == "push"){
             memoryIdx += 6;
         }
         else if(codelines[i].substr(0,3) == "pop"){
@@ -177,43 +184,43 @@ int main(int argc, char* argv[])
         else if(codelines[i].substr(0,3) == "cmp"){
             memoryIdx += 6;
         }
-        else if(codelines[i].substr(0,3) == "jz"){
+        else if(codelines[i].substr(0,2) == "jz"){
             memoryIdx += 6;
         }
         else if(codelines[i].substr(0,3) == "jnz"){
             memoryIdx += 6;
         }
-        else if(codelines[i].substr(0,3) == "jn"){
+        else if(codelines[i].substr(0,2) == "jn"){
             memoryIdx += 6;
         }
         else if(codelines[i].substr(0,3) == "jne"){
             memoryIdx += 6;
         }
-        else if(codelines[i].substr(0,3) == "ja"){
+        else if(codelines[i].substr(0,2) == "ja"){
             memoryIdx += 6;
         }
         else if(codelines[i].substr(0,3) == "jae"){
             memoryIdx += 6;
         }
-        else if(codelines[i].substr(0,3) == "jb"){
+        else if(codelines[i].substr(0,2) == "jb"){
             memoryIdx += 6;
         }
         else if(codelines[i].substr(0,3) == "jbe"){
             memoryIdx += 6;
         }
-        else if(codelines[i].substr(0,3) == "jnae"){
+        else if(codelines[i].substr(0,4) == "jnae"){
             memoryIdx += 6;
         }
         else if(codelines[i].substr(0,3) == "jnb"){
             memoryIdx += 6;
         }
-        else if(codelines[i].substr(0,3) == "jnbe"){
+        else if(codelines[i].substr(0,4) == "jnbe"){
             memoryIdx += 6;
         }
         else if(codelines[i].substr(0,3) == "jnc"){
             memoryIdx += 6;
         }
-        else if(codelines[i].substr(0,3) == "jc"){
+        else if(codelines[i].substr(0,2) == "jc"){
             memoryIdx += 6;
         }
         else if(codelines[i] == "int 21h"){
@@ -263,6 +270,7 @@ int main(int argc, char* argv[])
     //ASIL KOD BURADAN BAŞLIYOR
     for(int i = 0; i < codelines.size(); i++){
         string tmp = codelines[i];
+        replace(tmp.begin(), tmp.end(), ',', ' ');
         string type;
         string first;
         string sec;
@@ -279,39 +287,137 @@ int main(int argc, char* argv[])
                 it = vars.find(var);
                 if(it == vars.end())
                     cout << "Key-value pair not present in map" << endl;
-                else{
+                //VEYA VARIABLE YERINE BIR INTEGER GIRIYOR OLABILIR
+                else {
                     if(first == "ax"){
-                        mov_reg_offset(pax, it->second);
+                        ax = it->second;
                     }
                     else if(first == "bx"){
-                        mov_reg_offset(pbx, it->second);
+                        bx = it->second;
                     }
                     else if(first == "cx"){
-                        mov_reg_offset(pcx, it->second);
+                        cx = it->second;
                     }
+                    else if(first == "dx"){
+                        dx = it->second;
+                    }
+                    else if(first == "di"){
+                        di = it->second;
+                    }
+                    else if(first == "sp"){
+                        sp = it->second;
+                    }
+                    else if(first == "si"){
+                        si = it->second;
+                    }
+                    else if(first == "bp"){
+                        bp = it->second;
+                    }
+                    else if(first == "ah"){
+                        ah = it->second;
+                    }
+                    else if(first == "al"){
+                        al = it->second;
+                    }
+                    else if(first == "bh"){
+                        bh = it->second;
+                    }
+                    else if(first == "bl"){
+                        bl = it->second;
+                    }
+                    else if(first == "ch"){
+                        ch = it->second;
+                    }
+                    else if(first == "cl"){
+                        cl = it->second;
+                    }
+                    else if(first == "dh"){
+                        dh = it->second;
+                    }
+                    else if(first == "dl"){
+                        dl = it->second;
+                    }
+
                 }
-            }else{
-                if(first == "ax"){
-                    if(sec.at(sec.size()-1) == 'h'){
-                        string s = sec.substr(0,sec.size()-1);
+            }else {
+                if (first.find('[') != string::npos) {
+                    char desType = first.at(0);
+                    first = first.substr(2, 4);
+                    if (sec.at(sec.size() - 1) == 'h') {
+                        var = sec.substr(0, var.size() - 1);
+                        if (desType == 'b' && var.size() > 2) {
+                            cout << "ERROR" << endl;
+                            break;
+                        }
+                        if (desType == 'w' && var.size() < 4) {
+                            cout << "ERROR" << endl;
+                            break;
+                        }
+                        if (first == "ax") {
+                            memory[ax] = hex2dec(var.substr(0,2));
+                            memory[ax+1] = hex2dec(var.substr(2,4));
+                        } else if (first == "bx") {
+                            memory[bx] = hex2dec(var.substr(0,2));
+                            memory[bx+1] = hex2dec(var.substr(2,4));
+                        } else if (first == "cx") {
+                            memory[cx] = hex2dec(var.substr(0,2));
+                            memory[cx+1] = hex2dec(var.substr(2,4));
+                        } else if (first == "dx") {
+                            memory[dx] = hex2dec(var.substr(0,2));
+                            memory[dx+1] = hex2dec(var.substr(2,4));
+                        } else if (first == "di") {
+                            memory[di] = hex2dec(var.substr(0,2));
+                            memory[di+1] = hex2dec(var.substr(2,4));
+                        } else if (first == "sp") {
+                            memory[sp] = hex2dec(var.substr(0,2));
+                            memory[sp+1] = hex2dec(var.substr(2,4));
+                        } else if (first == "si") {
+                            memory[si] = hex2dec(var.substr(0,2));
+                            memory[si+1] = hex2dec(var.substr(2,4));
+                        } else if (first == "bp") {
+                            memory[bp] = hex2dec(var.substr(0,2));
+                            memory[bp+1] = hex2dec(var.substr(2,4));
+                        } else if (first == "ah") {
+                            memory[ah] = hex2dec(var);
+                        } else if (first == "al") {
+                            memory[al] = hex2dec(var);
+                        } else if (first == "bh") {
+                            memory[bh] = hex2dec(var);
+                        } else if (first == "bl") {
+                            memory[bl] = hex2dec(var);
+                        } else if (first == "ch") {
+                            memory[ch] = hex2dec(var);
+                        } else if (first == "cl") {
+                            memory[cl] = hex2dec(var);
+                        } else if (first == "dh") {
+                            memory[dh] = hex2dec(var);
+                        } else if (first == "dl") {
+                            memory[dl] = hex2dec(var);
+                        }
+                    }
+                } else {
+                    if (first == "ax") {
+                    if (sec.at(sec.size() - 1) == 'h') {
+                        string s = sec.substr(0, sec.size() - 1);
                         mov_reg_hex(pax, hex2dec(s));
                     }
-                    else if(vars.count(sec)){
-                        map<string, int>::iterator it ;
+                    else if (vars.count(sec)) {
+                        map<string, int>::iterator it;
                         it = vars.find(sec);
-                        if(it != vars.end())
+                        if (it != vars.end())
                             mov_reg_hex(pax, memory[it->second]);
                     }
-                    else{
-                        if(sec == "bx"){
+                    else {
+                        if (sec == "bx") {
                             mov_reg_reg(pax, pbx);
-                        }else if(sec == "cx"){
+                        } else if (sec == "cx") {
                             mov_reg_reg(pax, pcx);
                         }
                             //SADECE SAYI İSE
-                        else{
+                        else {
                             mov_reg_dec(pax, stoi(sec));
                         }
+                    }
                     }
                 }
                 else if(first == "bx"){
