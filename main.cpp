@@ -230,6 +230,7 @@ int main(int argc, char* argv[])
     }
     memoryIdx += 6;
 
+    //VARİABLE OKUMA
     for(int j = i+1; j < codelines.size(); j++){
         string tmp = codelines[j];
         string var;
@@ -239,13 +240,11 @@ int main(int argc, char* argv[])
         getline(check1, var, ' ');
         getline(check1, type, ' ');
         getline(check1, info, ' ');
-        vars.insert({var, memoryIdx});
         if(type == "db"){
             info = info.substr(0, info.size()-1);
             unsigned char data = hex2dec(info);
             vars.insert(pair<string, int> (var + "1", memoryIdx));
             memory[memoryIdx] = data;
-            vars.insert({var, memoryIdx});
             memoryIdx++;
         }else if(type == "dw"){
             info = info.substr(0, info.size()-1);
@@ -254,19 +253,15 @@ int main(int argc, char* argv[])
             vars.insert(pair<string, int> (var + "2", memoryIdx));
             memory[memoryIdx] = data1;
             memory[memoryIdx+1] = data2;
-            vars.insert({var, memoryIdx});
             memoryIdx+=2;
         }else{
             cout << "error" << endl;
         }
-        //memorye ASCII kodu atılacak
-        //Scanner olarak al
     }
 
     //ASIL KOD BURADAN BAŞLIYOR
     for(int i = 0; i < codelines.size(); i++){
         string tmp = codelines[i];
-        //replace(tmp.begin(), tmp.end(), ',', ' ');
         string type;
         string first;
         string sec;
@@ -279,11 +274,11 @@ int main(int argc, char* argv[])
             getline(check1, var, ' ');
             if(var != ""){
                 //OFFSET İSE
+                //TODO OFFSET İSE FİRST'DE KÖŞELİ PARANTEZ OLABİLİR
                 map<string, int>::iterator it ;
                 it = vars.find(var);
                 if(it == vars.end())
                     cout << "Key-value pair not present in map" << endl;
-                //VEYA VARIABLE YERINE BIR INTEGER GIRIYOR OLABILIR
                 else {
                     if(first == "ax"){
                         ax = it->second;
@@ -338,8 +333,15 @@ int main(int argc, char* argv[])
             }else {
                 if (first.find('[') != string::npos) {
                     char desType = first.at(0);
+                    //TODO SECOND'DA KÖŞELİ VAR MI DİYE BAK
                     first = first.substr(2, 4);
-                    if (sec.at(sec.size() - 1) == 'h') {
+                    if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
+                        map<string, int>::iterator it;
+                        it = vars.find(sec);
+                        if (it != vars.end())
+                            ax = memory[it->second];
+                    }
+                    else if (sec.at(sec.size() - 1) == 'h') {
                         var = sec.substr(0, var.size() - 1);
                         if (desType == 'b' && var.size() > 2) {
                             cout << "ERROR" << endl;
@@ -392,15 +394,17 @@ int main(int argc, char* argv[])
                         }
                     }
                 } else {
+                    //TODO SECOND'DA KÖŞELİ VAR MI DİYE BAK
+                    //TODO ALTTAKİ İF İ FONKSİYON YAP
                     if (first == "ax") {
-                        if (sec.at(sec.size() - 1) == 'h') {
-                            string s = sec.substr(0, sec.size() - 1);
-                            ax = hex2dec(s);
-                        } else if (vars.count(sec)) {
+                        if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
                             map<string, int>::iterator it;
                             it = vars.find(sec);
                             if (it != vars.end())
-                                ax =  memory[it->second];
+                                ax = memory[it->second];
+                        } else if (sec.at(sec.size() - 1) == 'h') {
+                            string s = sec.substr(0, sec.size() - 1);
+                            ax = hex2dec(s);
                         } else {
                             if (sec == "bx") {
                                 mov_reg_reg(pax, pbx);
@@ -414,7 +418,9 @@ int main(int argc, char* argv[])
                         }
                     } else if (first == "bx") {
 
-                    } else if (first == "w[bx]") {
+                    }
+                    //TODO BURADAKİ ELSEİF GEREKSİZ ŞUANLIK
+                    else if (first == "w[bx]") {
                         if (sec.at(sec.size() - 1) == 'h') {
                             string s1 = sec.substr(0, 2);
                             string s2 = sec.substr(2, 4);
