@@ -14,8 +14,6 @@ template <class datatype> void print_bits(datatype x) ;
 template <class datatype> void print_hex(datatype x) ;
 template <class regtype>  void mov_reg_reg(regtype *preg1,regtype *preg2)  ;
 template <class regtype>  void mov_reg_offset(regtype *preg1, int a)  ;
-template <class regtype>  void mov_reg_hex(regtype *preg1,unsigned char c)  ;
-template <class regtype>  void mov_reg_dec(regtype *preg1,int a)  ;
 template <class regtype>  void add_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void sub_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void not_reg(regtype *preg)  ;
@@ -397,12 +395,12 @@ int main(int argc, char* argv[])
                     if (first == "ax") {
                         if (sec.at(sec.size() - 1) == 'h') {
                             string s = sec.substr(0, sec.size() - 1);
-                            mov_reg_hex(pax, hex2dec(s));
+                            ax = hex2dec(s);
                         } else if (vars.count(sec)) {
                             map<string, int>::iterator it;
                             it = vars.find(sec);
                             if (it != vars.end())
-                                mov_reg_hex(pax, memory[it->second]);
+                                ax =  memory[it->second];
                         } else {
                             if (sec == "bx") {
                                 mov_reg_reg(pax, pbx);
@@ -411,7 +409,7 @@ int main(int argc, char* argv[])
                             }
                                 //SADECE SAYI İSE
                             else {
-                                mov_reg_dec(pax, stoi(sec));
+                               ax = stoi(sec);
                             }
                         }
                     } else if (first == "bx") {
@@ -487,18 +485,6 @@ template <class regtype>
 void mov_reg_reg(regtype *preg1, regtype *preg2)
 {
     *preg1 = *preg2 ;
-}
-
-template <class regtype>
-void mov_reg_hex(regtype *preg1,unsigned char c)
-{
-    *preg1 = c ;
-}
-
-template <class regtype>
-void mov_reg_dec(regtype *preg1, int a)
-{
-    *preg1 = a ;
 }
 
 template <class regtype>
