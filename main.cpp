@@ -26,6 +26,7 @@ unsigned char hex2dec(string hex);
 template <class regtype>  void inc_reg(regtype *preg);
 template <class regtype>  void dec_reg(regtype *preg);
 void print_16bitregs() ;
+void movFunc(string f, string s) ;
 string erase(string s);
 
 // global variables ( memory, registers and flags )
@@ -419,7 +420,7 @@ int main(int argc, char* argv[])
                     } else if (first == "bx") {
 
                     }
-                    //TODO BURADAKİ ELSEİF GEREKSİZ ŞUANLIK
+                    //TODO BURADAKİ ELSE-İF GEREKSİZ ŞUANLIK
                     else if (first == "w[bx]") {
                         if (sec.at(sec.size() - 1) == 'h') {
                             string s1 = sec.substr(0, 2);
@@ -581,6 +582,18 @@ string erase(string s){
         }
     }
     return s;
+}
+
+void movFunc(string f, string s){
+    if(f.find('[') == string::npos && s.find('[') == string::npos){
+
+    }else if(f.find('[') != string::npos && s.find('[') == string::npos){
+
+    }else if(f.find('[') == string::npos && s.find('[') != string::npos){
+
+    }else{
+
+    }
 }
 
 template <class datatype>
