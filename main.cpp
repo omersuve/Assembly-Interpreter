@@ -29,8 +29,8 @@ void print_16bitregs() ;
 void movFunc(string first, string sec) ;
 string erase(string s);
 bool check_number(string str);
-void firstParaYes_secParaNo(string first, int num1, int num2, char desType);
-void firstParaYes_secParaYes(string first, int num1, int num2, char desType);
+void firstParaYes_secParaNo(string first, int num1, int num2);
+void firstParaYes_secParaYes(string first, int num1, int num2);
 
 // global variables ( memory, registers and flags )
 unsigned char memory[2<<15];    // 64K memory
@@ -603,33 +603,35 @@ void movFunc(string first, string sec){
             int temp1 = hex2dec(num.substr(0,2));
             int temp2 = hex2dec(num.substr(2,2));
 
-            firstParaYes_secParaNo(first, temp1, temp2, desType);
+            firstParaYes_secParaNo(first, temp1, temp2);
 
         }
     }else if(first.find('[') != string::npos && sec.find('[') != string::npos){
         int temp1;
         int temp2;
         char desType = first.at(0);
-        first = first.substr(2, 2);
-        sec = sec.substr(2, sec.size()-3);
+        first = first.substr(2, 4);
+        sec = sec.substr(1, sec.size()-1);
         if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
             map<string, int>::iterator it;
-            it = vars.find(sec);
-            if (it != vars.end())
-                ax = memory[it->second];
+            it = vars.find(sec + "1");
+            if (it == vars.end()) {
+                it = vars.find(sec + "2");
+                firstParaYes_secParaYes(first, it->second, it->second+1);
+            } else firstParaYes_secParaYes(first, it->second, it->second+1);
         } else if (sec.at(sec.size() - 1) == 'h') {
             string num = sec.substr(0, sec.size() - 1);
             temp1 = hex2dec(num.substr(0,2));
-            temp2 = hex2dec(num.substr(2,2));
+            temp2 = hex2dec(num.substr(2,4));
 
-            firstParaYes_secParaYes(first, temp1, temp2, desType);
+            firstParaYes_secParaYes(first, temp1, temp2);
 
         }
         else if(check_number(sec)){
             temp1 = hex2dec(sec.substr(0,2));
-            temp2 = hex2dec(sec.substr(2,2));
+            temp2 = hex2dec(sec.substr(2,4));
 
-            firstParaYes_secParaYes(first, temp1, temp2, desType);
+            firstParaYes_secParaYes(first, temp1, temp2);
 
         }
         else{
@@ -697,7 +699,7 @@ bool check_number(string str) {
     return true;
 }
 
-void firstParaYes_secParaNo(string first,int num1,int num2, char desType){
+void firstParaYes_secParaNo(string first,int num1,int num2){
     /*
   if (desType == 'b' && num.size() > 2) {
       cout << "ERROR" << endl;
@@ -751,7 +753,7 @@ void firstParaYes_secParaNo(string first,int num1,int num2, char desType){
     }
 }
 
-void firstParaYes_secParaYes(string first,int num1,int num2, char desType){
+void firstParaYes_secParaYes(string first,int num1,int num2){
     /*
     if (desType == 'b' && num.size() > 2) {
         cout << "ERROR" << endl;
