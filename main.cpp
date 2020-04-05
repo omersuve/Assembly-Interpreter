@@ -30,8 +30,7 @@ void movFunc(string first, string sec) ;
 string erase(string s);
 template <class datatype> void hexToArray(unsigned char arr[], datatype x, int index);
 bool check_number(string str);
-template <class regtype> void firstParaYes_secParaNo(regtype *first, string sec);
-template <class regtype> void firstParaYes_secParaYes(regtype *first, string sec);
+template <class regtype> void firstParaYes_secParaNo(regtype *first, string sec, char desType);
 template <class regtype> void firstParaNo_secParaNo(regtype *first, string sec);
 template <class regtype> void firstParaNo_secParaYes(regtype *first, string sec);
 
@@ -605,37 +604,37 @@ void movFunc(string first, string sec){
         //TODO BURADA FİRST==VARİABLE KONTROLÜ YAP
 
         if(first == "ax"){
-            firstParaYes_secParaNo(pax, sec);
+            firstParaYes_secParaNo(pax, sec, desType);
         } else if(first == "bx"){
-            firstParaYes_secParaNo(pbx, sec);
+            firstParaYes_secParaNo(pbx, sec, desType);
         } else if(first == "cx"){
-            firstParaYes_secParaNo(pcx, sec);
+            firstParaYes_secParaNo(pcx, sec, desType);
         } else if(first == "dx"){
-            firstParaYes_secParaNo(pdx, sec);
+            firstParaYes_secParaNo(pdx, sec, desType);
         } else if(first == "di"){
-            firstParaYes_secParaNo(pdi, sec);
+            firstParaYes_secParaNo(pdi, sec, desType);
         } else if(first == "sp"){
-            firstParaYes_secParaNo(psp, sec);
+            firstParaYes_secParaNo(psp, sec, desType);
         } else if(first == "si"){
-            firstParaYes_secParaNo(psi, sec);
+            firstParaYes_secParaNo(psi, sec, desType);
         } else if(first == "bp"){
-            firstParaYes_secParaNo(pbp, sec);
+            firstParaYes_secParaNo(pbp, sec, desType);
         } else if(first == "ah"){
-            firstParaYes_secParaNo(pah, sec);
+            firstParaYes_secParaNo(pah, sec, desType);
         } else if(first == "al"){
-            firstParaYes_secParaNo(pal, sec);
+            firstParaYes_secParaNo(pal, sec, desType);
         } else if(first == "bh"){
-            firstParaYes_secParaNo(pbh, sec);
+            firstParaYes_secParaNo(pbh, sec, desType);
         } else if(first == "bl"){
-            firstParaYes_secParaNo(pbl, sec);
+            firstParaYes_secParaNo(pbl, sec, desType);
         } else if(first == "ch"){
-            firstParaYes_secParaNo(pch, sec);
+            firstParaYes_secParaNo(pch, sec, desType);
         } else if(first == "cl"){
-            firstParaYes_secParaNo(pcl, sec);
+            firstParaYes_secParaNo(pcl, sec, desType);
         } else if(first == "dh"){
-            firstParaYes_secParaNo(pdh, sec);
+            firstParaYes_secParaNo(pdh, sec, desType);
         } else if(first == "dl"){
-            firstParaYes_secParaNo(pdl, sec);
+            firstParaYes_secParaNo(pdl, sec, desType);
         }
     }else if(first.find('[') == string::npos && sec.find('[') == string::npos){
         if (first == "ax") {
@@ -722,9 +721,10 @@ template <class regtype>
 void firstParaNo_secParaNo(regtype *first, string sec){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         map<string, int>::iterator it;
-        it = vars.find(sec);
-        if (it != vars.end())
-            *first = memory[it->second];
+        it = vars.find(sec + "1");
+        if (it == vars.end())
+            it = vars.find(sec + "2");
+        *first = memory[it->second];
     } else if (sec.at(sec.size() - 1) == 'h') {
         string s = sec.substr(0, sec.size() - 1);
         *first = hex2dec(s);
@@ -770,7 +770,7 @@ void firstParaNo_secParaNo(regtype *first, string sec){
 }
 
 template <class regtype>
-void firstParaYes_secParaNo(regtype *first,string sec){
+void firstParaYes_secParaNo(regtype *first,string sec, char desType){
     /*
   if (desType == 'b' && num.size() > 2) {
       cout << "ERROR" << endl;
@@ -784,14 +784,31 @@ void firstParaYes_secParaNo(regtype *first,string sec){
 
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         map<string, int>::iterator it;
-        it = vars.find(sec);
-        if (it != vars.end())
-            memory[*first] = it->second;
+        it = vars.find(sec + "1");
+        if (it == vars.end())
+            it = vars.find(sec + "2");
+        memory[*first] = it->second;
     }
     else if (sec.at(sec.size() - 1) == 'h') {
         string num = sec.substr(0, sec.size() - 1);
+        if(num.size() == 1 || num.size() == 2){
+            memory[*first] = hex2dec(num);
+            if(desType == 'w')
+            memory[*first+1] = 0;
+        }
+        else {
+            if(desType == 'b') {
+                cout << "TYPE MISMATCH ERROR" << endl;
+                break;
+            }
+            else {
+                memory[*first] = hex2dec(num.substr(num.size() - 2, 2));
+                memory[*first + 1] = hex2dec(num.substr(0, num.size() - 2));
+            }
+        }
         // buraya şu şekilde atılacak -> 12c4h ise ch ı memory[first] , 12 yi memory[first+1]
-    }else{
+    }
+    else{
         if (sec == "ax") {
             hexToArray(memory, ax, *first);
         } else if (sec == "bx") {
@@ -825,20 +842,18 @@ void firstParaYes_secParaNo(regtype *first,string sec){
         } else if (sec == "dl") {
             hexToArray(memory, dl, *first);
         }
+        else {
+            memory[*first] = stoi(sec);
+        }
     }
     
 }
 
 template <class regtype>
 void firstParaNo_secParaYes(regtype *first ,string sec){
-    if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-        map<string, int>::iterator it;
-        it = vars.find(sec);
-        if (it != vars.end())
-            ax = memory[it->second];
-    } else if (sec.at(sec.size() - 1) == 'h') {
-        string s = sec.substr(0, sec.size() - 1);
-        ax = hex2dec(s);
+    if (sec.at(sec.size() - 1) == 'h') {
+        string num = sec.substr(0, sec.size() - 1);
+        *first = memory[hex2dec(num)];
     } else {
         if (sec == "ax") {
             *first = memory[ax];
@@ -900,8 +915,8 @@ void hexToArray(unsigned char arr[], datatype x, int index){
     }
     else{
         unsigned char *rep = (unsigned char *)&tmp;
-        arr[index] = rep[0];
-        arr[index+1] = rep[1];
+        arr[index] = rep[1];
+        arr[index+1] = rep[0];
     }
 }
 
