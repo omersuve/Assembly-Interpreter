@@ -253,18 +253,33 @@ int main(int argc, char* argv[])
         getline(check1, type, ' ');
         getline(check1, info, ' ');
         if(type == "db"){
-            info = info.substr(0, info.size()-1);
-            unsigned char data = hex2dec(info);
+            unsigned char data;
+            if(info.at(info.size() - 1) == 'h') {
+                info = info.substr(0, info.size() - 1);
+                data = hex2dec(info);
+            }
+            else if(info.at(info.size() - 1) == '\'')
+                data = info.at(info.size()-2);
+            else
+                data = stoi(info);
             vars.insert(pair<string, int> (var + "1", memoryIdx));
             memory[memoryIdx] = data;
             memoryIdx++;
         }else if(type == "dw"){
-            info = info.substr(0, info.size()-1);
-            unsigned char data1 = hex2dec(info.substr(0,2));
-            unsigned char data2 = hex2dec(info.substr(2,2));
+            unsigned char data1;
+            unsigned char data2;
+            if(info.at(info.size() - 1) == 'h') {
+                info = info.substr(0, info.size() - 1);
+                data1 = hex2dec(info)/256;
+                data2 = hex2dec(info) - 256*data1;
+            }
+            else {
+                data1 = stoi(info)/256;
+                data2 = stoi(info) - 256*data1;
+            }
             vars.insert(pair<string, int> (var + "2", memoryIdx));
-            memory[memoryIdx] = data1;
-            memory[memoryIdx+1] = data2;
+            memory[memoryIdx] = data2;
+            memory[memoryIdx+1] = data1;
             memoryIdx+=2;
         }else{
             cout << "error" << endl;
@@ -725,10 +740,16 @@ void firstParaNo_secParaNo(regtype *first, string sec){
         if (it == vars.end())
             it = vars.find(sec + "2");
         *first = memory[it->second];
-    } else if (sec.at(sec.size() - 1) == 'h') {
+    }
+    else if (sec.at(sec.size() - 1) == 'h') {
         string s = sec.substr(0, sec.size() - 1);
         *first = hex2dec(s);
-    } else {
+    }
+    else if (sec.at(sec.size() - 1) == '\'') {
+        unsigned char temp = sec.at(sec.size()-2);
+        *first = temp;
+    }
+    else {
         if (sec == "ax") {
             *first = ax;
         } else if (sec == "bx") {
@@ -799,7 +820,6 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
         else {
             if(desType == 'b') {
                 cout << "TYPE MISMATCH ERROR" << endl;
-                break;
             }
             else {
                 memory[*first] = hex2dec(num.substr(num.size() - 2, 2));
@@ -808,7 +828,13 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
         }
         // buraya şu şekilde atılacak -> 12c4h ise ch ı memory[first] , 12 yi memory[first+1]
     }
-    else{
+    else if(sec.at(sec.size() - 1) == '\'') {
+        unsigned char temp = sec.at(sec.size()-2);
+        memory[*first] = temp;
+        if(desType == 'w')
+        memory[*first + 1] = 0;
+    }
+    else {
         if (sec == "ax") {
             hexToArray(memory, ax, *first);
         } else if (sec == "bx") {
