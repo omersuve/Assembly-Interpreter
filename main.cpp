@@ -4,16 +4,12 @@
 #include <map>
 #include <sstream>
 #include "cmath"
-#include <algorithm>
-
 
 using namespace std;
 
 // prototypes
 template <class datatype> void print_bits(datatype x) ;
 template <class datatype> void print_hex(datatype x) ;
-template <class regtype>  void mov_reg_reg(regtype *preg1,regtype *preg2)  ;
-template <class regtype>  void mov_reg_offset(regtype *preg1, int a)  ;
 template <class regtype>  void add_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void sub_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void not_reg(regtype *preg)  ;
@@ -39,6 +35,7 @@ unsigned char memory[2<<15];    // 64K memory
 vector<string> lines;
 map <string, int> vars;
 map <string, int> labels;
+
 unsigned short ax = 0 ;
 unsigned short bx = 0 ;
 unsigned short cx = 0 ;
@@ -81,6 +78,11 @@ unsigned char *pch = (unsigned char *) ( ( (unsigned char *) &cx) + 1) ;
 unsigned char *pcl = (unsigned char *) &cx  ;
 unsigned char *pdh = (unsigned char *) ( ( (unsigned char *) &dx) + 1) ;
 unsigned char *pdl = (unsigned char *) &dx  ;
+
+
+//TODO AX VE AH GİBİ REGİSTERLARDA POİNTERLARDA DEĞER DEĞİŞSE DE VAİRABLE'DA DEĞER DEĞİŞMİYOR, ONA BAK.
+//TODO (YANİ AH I DEĞİŞTİRDİĞİMDE AH VE AX DEĞİŞMİYOR, FAKAT PAH DEĞİŞİYOR.)
+
 
 int main(int argc, char* argv[])
 {
@@ -302,62 +304,118 @@ int main(int argc, char* argv[])
             if(var != ""){
                 //OFFSET İSE
                 //TODO OFFSET İSE FİRST'DE KÖŞELİ PARANTEZ OLABİLİR
-                map<string, int>::iterator it ;
-                it = vars.find(var);
-                if(it == vars.end())
+                if (vars.count((var + "1")) || vars.count((var + "2"))) {
+                    map<string, int>::iterator it = vars.begin();
+                    it = vars.find(var + "1");
+                    if (it == vars.end())
+                        it = vars.find(var + "2");
+                    if(first.find('[') != string::npos && sec.find('[') == string::npos){
+                        char desType = first.at(0);
+                        first = first.substr(2, first.size()-3);
+                        if(first == "ax"){
+                            memory[ax] = it->second;
+                        }
+                        else if(first == "bx"){
+                            memory[bx] = it->second;
+                        }
+                        else if(first == "cx"){
+                            memory[cx] = it->second;
+                        }
+                        else if(first == "dx"){
+                            memory[dx] = it->second;
+                        }
+                        else if(first == "di"){
+                            memory[di] = it->second;
+                        }
+                        else if(first == "sp"){
+                            memory[sp] = it->second;
+                        }
+                        else if(first == "si"){
+                            memory[si] = it->second;
+                        }
+                        else if(first == "bp"){
+                            memory[bp] = it->second;
+                        }
+                        else if(first == "ah"){
+                            memory[ah] = it->second;
+                        }
+                        else if(first == "al"){
+                            memory[al] = it->second;
+                        }
+                        else if(first == "bh"){
+                            memory[bh] = it->second;
+                        }
+                        else if(first == "bl"){
+                            memory[bl] = it->second;
+                        }
+                        else if(first == "ch"){
+                            memory[ch] = it->second;
+                        }
+                        else if(first == "cl"){
+                            memory[cl] = it->second;
+                        }
+                        else if(first == "dh"){
+                            memory[dh]= it->second;
+                        }
+                        else if(first == "dl"){
+                            memory[dl] = it->second;
+                        }
+                    }else{
+                        if(first == "ax"){
+                            ax = it->second;
+                        }
+                        else if(first == "bx"){
+                            bx = it->second;
+                        }
+                        else if(first == "cx"){
+                            cx = it->second;
+                        }
+                        else if(first == "dx"){
+                            dx = it->second;
+                        }
+                        else if(first == "di"){
+                            di = it->second;
+                        }
+                        else if(first == "sp"){
+                            sp = it->second;
+                        }
+                        else if(first == "si"){
+                            si = it->second;
+                        }
+                        else if(first == "bp"){
+                            bp = it->second;
+                        }
+                        else if(first == "ah"){
+                            ah = it->second;
+                        }
+                        else if(first == "al"){
+                            al = it->second;
+                        }
+                        else if(first == "bh"){
+                            bh = it->second;
+                        }
+                        else if(first == "bl"){
+                            bl = it->second;
+                        }
+                        else if(first == "ch"){
+                            ch = it->second;
+                        }
+                        else if(first == "cl"){
+                            cl = it->second;
+                        }
+                        else if(first == "dh"){
+                            dh = it->second;
+                        }
+                        else if(first == "dl"){
+                            dl = it->second;
+                        }
+                    }
+                }else{
                     cout << "Key-value pair not present in map" << endl;
-                else {
-                    if(first == "ax"){
-                        ax = it->second;
-                    }
-                    else if(first == "bx"){
-                        bx = it->second;
-                    }
-                    else if(first == "cx"){
-                        cx = it->second;
-                    }
-                    else if(first == "dx"){
-                        dx = it->second;
-                    }
-                    else if(first == "di"){
-                        di = it->second;
-                    }
-                    else if(first == "sp"){
-                        sp = it->second;
-                    }
-                    else if(first == "si"){
-                        si = it->second;
-                    }
-                    else if(first == "bp"){
-                        bp = it->second;
-                    }
-                    else if(first == "ah"){
-                        ah = it->second;
-                    }
-                    else if(first == "al"){
-                        al = it->second;
-                    }
-                    else if(first == "bh"){
-                        bh = it->second;
-                    }
-                    else if(first == "bl"){
-                        bl = it->second;
-                    }
-                    else if(first == "ch"){
-                        ch = it->second;
-                    }
-                    else if(first == "cl"){
-                        cl = it->second;
-                    }
-                    else if(first == "dh"){
-                        dh = it->second;
-                    }
-                    else if(first == "dl"){
-                        dl = it->second;
-                    }
-
                 }
             }else {
+                movFunc(first, sec);
+                /*
                 if (first.find('[') != string::npos) {
                     char desType = first.at(0);
                     //TODO SECOND'DA KÖŞELİ VAR MI DİYE BAK
@@ -458,6 +516,9 @@ int main(int argc, char* argv[])
                     } else {
                     }
                 }
+
+                 */
+
             }
             //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
@@ -512,18 +573,6 @@ int main(int argc, char* argv[])
     print_bits(*pal);
     print_bits(*pah);
     //print_bits(*pax);
-}
-
-template <class regtype>
-void mov_reg_reg(regtype *preg1, regtype *preg2)
-{
-    *preg1 = *preg2 ;
-}
-
-template <class regtype>
-void mov_reg_offset(regtype *preg1, int a)
-{
-    *preg1 = a ;
 }
 
 template  <class regtype>
@@ -735,7 +784,7 @@ bool check_number(string str) {
 template <class regtype>
 void firstParaNo_secParaNo(regtype *first, string sec){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-        map<string, int>::iterator it;
+        map<string, int>::iterator it = vars.begin();
         it = vars.find(sec + "1");
         if (it == vars.end())
             it = vars.find(sec + "2");
@@ -804,7 +853,7 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
    */
 
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-        map<string, int>::iterator it;
+        map<string, int>::iterator it = vars.begin();
         it = vars.find(sec + "1");
         if (it == vars.end())
             it = vars.find(sec + "2");
