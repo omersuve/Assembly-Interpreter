@@ -44,14 +44,6 @@ unsigned short di = 0 ;
 unsigned short bp = 0 ;
 unsigned short si = 0 ;
 unsigned short sp = (2<<15)-2 ;
-unsigned char ah = 0 ;
-unsigned char al = 0 ;
-unsigned char bh = 0 ;
-unsigned char bl = 0 ;
-unsigned char ch = 0 ;
-unsigned char cl = 0 ;
-unsigned char dh = 0 ;
-unsigned char dl = 0 ;
 
 bool     zf       ;              // zero flag
 bool     sf       ;              // sign flag
@@ -78,10 +70,6 @@ unsigned char *pch = (unsigned char *) ( ( (unsigned char *) &cx) + 1) ;
 unsigned char *pcl = (unsigned char *) &cx  ;
 unsigned char *pdh = (unsigned char *) ( ( (unsigned char *) &dx) + 1) ;
 unsigned char *pdl = (unsigned char *) &dx  ;
-
-
-//TODO AX VE AH GİBİ REGİSTERLARDA POİNTERLARDA DEĞER DEĞİŞSE DE VAİRABLE'DA DEĞER DEĞİŞMİYOR, ONA BAK.
-//TODO (YANİ AH I DEĞİŞTİRDİĞİMDE AH VE AX DEĞİŞMİYOR, FAKAT PAH DEĞİŞİYOR.)
 
 
 int main(int argc, char* argv[])
@@ -337,28 +325,28 @@ int main(int argc, char* argv[])
                             memory[bp] = it->second;
                         }
                         else if(first == "ah"){
-                            memory[ah] = it->second;
+                            memory[*pah] = it->second;
                         }
                         else if(first == "al"){
-                            memory[al] = it->second;
+                            memory[*pal] = it->second;
                         }
                         else if(first == "bh"){
-                            memory[bh] = it->second;
+                            memory[*pbh] = it->second;
                         }
                         else if(first == "bl"){
-                            memory[bl] = it->second;
+                            memory[*pbl] = it->second;
                         }
                         else if(first == "ch"){
-                            memory[ch] = it->second;
+                            memory[*pch] = it->second;
                         }
                         else if(first == "cl"){
-                            memory[cl] = it->second;
+                            memory[*pcl] = it->second;
                         }
                         else if(first == "dh"){
-                            memory[dh]= it->second;
+                            memory[*pdh]= it->second;
                         }
                         else if(first == "dl"){
-                            memory[dl] = it->second;
+                            memory[*pdl] = it->second;
                         }
                     }else{
                         if(first == "ax"){
@@ -386,28 +374,28 @@ int main(int argc, char* argv[])
                             bp = it->second;
                         }
                         else if(first == "ah"){
-                            ah = it->second;
+                            *pah = it->second;
                         }
                         else if(first == "al"){
-                            al = it->second;
+                            *pal = it->second;
                         }
                         else if(first == "bh"){
-                            bh = it->second;
+                            *pbh = it->second;
                         }
                         else if(first == "bl"){
-                            bl = it->second;
+                            *pbl = it->second;
                         }
                         else if(first == "ch"){
-                            ch = it->second;
+                            *pch = it->second;
                         }
                         else if(first == "cl"){
-                            cl = it->second;
+                            *pcl = it->second;
                         }
                         else if(first == "dh"){
-                            dh = it->second;
+                            *pdh = it->second;
                         }
                         else if(first == "dl"){
-                            dl = it->second;
+                            *pdl = it->second;
                         }
                     }
                 }else{
@@ -816,21 +804,21 @@ void firstParaNo_secParaNo(regtype *first, string sec){
         } else if (sec == "bp") {
             *first = bp;
         } else if (sec == "ah") {
-            *first = ah;
+            *first = *pah;
         } else if (sec == "al") {
-            *first = al;
+            *first = *pal;
         } else if (sec == "bh") {
-            *first = bh;
+            *first = *pbh;
         } else if (sec == "bl") {
-            *first = bl;
+            *first = *pbl;
         } else if (sec == "ch") {
-            *first = ch;
+            *first = *pch;
         } else if (sec == "cl") {
-            *first = cl;
+            *first = *pcl;
         } else if (sec == "dh") {
-            *first = dh;
+            *first = *pdh;
         } else if (sec == "dl") {
-            *first = dl;
+            *first = *pdl;
         }
             //SADECE SAYI İSE
         else {
@@ -901,21 +889,21 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
         } else if (sec == "bp") {
             hexToArray(memory, bp, *first);
         } else if (sec == "ah") {
-            hexToArray(memory, ah, *first);
+            hexToArray(memory, *pah, *first);
         } else if (sec == "al") {
-            hexToArray(memory, al, *first);
+            hexToArray(memory, *pal, *first);
         } else if (sec == "bh") {
-            hexToArray(memory, bh, *first);
+            hexToArray(memory, *pbh, *first);
         } else if (sec == "bl") {
-            hexToArray(memory, bl, *first);
+            hexToArray(memory, *pbl, *first);
         } else if (sec == "ch") {
-            hexToArray(memory, ch, *first);
+            hexToArray(memory, *pch, *first);
         } else if (sec == "cl") {
-            hexToArray(memory, cl, *first);
+            hexToArray(memory, *pcl, *first);
         } else if (sec == "dh") {
-            hexToArray(memory, dh, *first);
+            hexToArray(memory, *pdh, *first);
         } else if (sec == "dl") {
-            hexToArray(memory, dl, *first);
+            hexToArray(memory, *pdl, *first);
         }
         else {
             memory[*first] = stoi(sec);
@@ -947,21 +935,21 @@ void firstParaNo_secParaYes(regtype *first ,string sec){
         } else if (sec == "bp") {
             *first = memory[bp];
         } else if (sec == "ah") {
-            *first = memory[ah];
+            *first = memory[*pah];
         } else if (sec == "al") {
-            *first = memory[al];
+            *first = memory[*pal];
         } else if (sec == "bh") {
-            *first = memory[bh];
+            *first = memory[*pbh];
         } else if (sec == "bl") {
-            *first = memory[bl];
+            *first = memory[*pbl];
         } else if (sec == "ch") {
-            *first = memory[ch];
+            *first = memory[*pch];
         } else if (sec == "cl") {
-            *first = memory[cl];
+            *first = memory[*pcl];
         } else if (sec == "dh") {
-            *first = memory[dh];
+            *first = memory[*pdh];
         } else if (sec == "dl") {
-            *first = memory[dl];
+            *first = memory[*pdl];
         }
             //SADECE SAYI İSE
         else {
