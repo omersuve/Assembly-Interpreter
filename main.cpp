@@ -22,7 +22,7 @@ template <class datatype> unsigned char hex2dec(datatype hex);
 template <class regtype>  void inc_reg(regtype *preg);
 template <class regtype>  void dec_reg(regtype *preg);
 void print_16bitregs() ;
-void movFunc(string first, string sec) ;
+void movFunc(string first, string &sec) ;
 string erase(string s);
 template <class datatype> void hexToArray(unsigned char arr[], datatype x, int index);
 bool check_number(string str);
@@ -30,9 +30,10 @@ template <class regtype> void firstParaYes_secParaNo(regtype *first, string sec,
 template <class regtype> void firstParaNo_secParaNo_add(regtype *first, string sec);
 template <class regtype> void firstParaNo_secParaNo_sub(regtype *first, string sec);
 template <class regtype> void firstParaNo_secParaNo_mov(regtype *first, string sec);
-template <class regtype> void firstParaNo_secParaYes(regtype *first, string sec);
+template <class regtype> void firstParaNo_secParaYes(regtype *first, string &sec);
 void addFunc(string first, string sec);
 void subFunc(string first, string sec);
+void editStr(string &s);
 
 // global variables ( memory, registers and flags )
 unsigned char memory[2<<15];    // 64K memory
@@ -104,6 +105,7 @@ int main(int argc, char* argv[])
     bool cont = false;
     //BURASI PROGRAMIN LABEL VE VARİABLE OKUDUĞU YER
 
+    /*
     for(int i = 0; i < lines.size(); i++){
         for(int j = 0; j < lines[i].size(); j++){
             if(lines[i].at(j) == ','){
@@ -111,6 +113,7 @@ int main(int argc, char* argv[])
             }
         }
     }
+     */
 
 
     for(int i = 0; i < lines.size(); i++){
@@ -247,33 +250,18 @@ int main(int argc, char* argv[])
         getline(check1, type, ' ');
         getline(check1, info, ' ');
         if(type == "db"){
-            unsigned char data;
-            if(info.at(info.size() - 1) == 'h') {
-                info = info.substr(0, info.size() - 1);
-                data = hex2dec(info);
-            }
-            else if(info.at(info.size() - 1) == '\'')
-                data = info.at(info.size()-2);
-            else
-                data = stoi(info);
+            info = info.substr(0, info.size()-1);
+            unsigned char data = hex2dec(info);
             vars.insert(pair<string, int> (var + "1", memoryIdx));
             memory[memoryIdx] = data;
             memoryIdx++;
         }else if(type == "dw"){
-            unsigned char data1;
-            unsigned char data2;
-            if(info.at(info.size() - 1) == 'h') {
-                info = info.substr(0, info.size() - 1);
-                data1 = hex2dec(info)/256;
-                data2 = hex2dec(info) - 256*data1;
-            }
-            else {
-                data1 = stoi(info)/256;
-                data2 = stoi(info) - 256*data1;
-            }
+            info = info.substr(0, info.size()-1);
+            unsigned char data1 = hex2dec(info.substr(0,2));
+            unsigned char data2 = hex2dec(info.substr(2,2));
             vars.insert(pair<string, int> (var + "2", memoryIdx));
-            memory[memoryIdx] = data2;
-            memory[memoryIdx+1] = data1;
+            memory[memoryIdx] = data1;
+            memory[memoryIdx+1] = data2;
             memoryIdx+=2;
         }else{
             cout << "error" << endl;
@@ -283,26 +271,32 @@ int main(int argc, char* argv[])
     //ASIL KOD BURADAN BAŞLIYOR
     for(int i = 0; i < codelines.size(); i++){
         string tmp = codelines[i];
-        string type;
+        editStr(tmp);
+        //string type;
         string first;
         string sec;
-        string var = "";
-        stringstream check1(tmp);
-        getline(check1, type, ' ');
-        if(type == "mov") {
+        //string var = "";
+        //stringstream check1(tmp);
+        //getline(check1, type, ' ');
+        if(tmp.substr(0, 3) == "mov") {
 
-            //TODO LINE'DAKİ EK BOŞLUKLARI SİLLECEK METODU ÇAĞIR
-
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
             getline(check1, first, ' ');
             getline(check1, sec, ' ');
-            getline(check1, var, ' ');
-            if(var != ""){
+            bool isOffset = false;
+            if(sec.substr(0,6) == "offset") {
+                sec = sec.substr(6, sec.size()-6);
+                isOffset = true;
+            }
+            //getline(check1, var, ' ');
+            if(isOffset){
                 //OFFSET İSE
-                if (vars.count((var + "1")) || vars.count((var + "2"))) {
+                if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
                     map<string, int>::iterator it = vars.begin();
-                    it = vars.find(var + "1");
+                    it = vars.find(sec + "1");
                     if (it == vars.end())
-                        it = vars.find(var + "2");
+                        it = vars.find(sec + "2");
                     if(first.find('[') != string::npos && sec.find('[') == string::npos){
                         char desType = first.at(0);
                         first = first.substr(2, first.size()-3);
@@ -409,6 +403,7 @@ int main(int argc, char* argv[])
                 }
             }else {
                 movFunc(first, sec);
+                if(stoi(sec) > 65535) cout << "ERROR" << endl;
                 /*
                 if (first.find('[') != string::npos) {
                     char desType = first.at(0);
@@ -516,17 +511,23 @@ int main(int argc, char* argv[])
             }
             //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
-        else if(type == "add"){
+        else if(tmp.substr(0, 3) == "add"){
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
             getline(check1, first, ' ');
             getline(check1, sec, ' ');
             addFunc(first, sec);
         }
-        else if(type == "sub"){
+        else if(tmp.substr(0, 3) == "sub"){
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
             getline(check1, first, ' ');
             getline(check1, sec, ' ');
             subFunc(first, sec);
         }
-        else if(type == "inc"){
+        else if(tmp.substr(0, 3) == "inc"){
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
             getline(check1, first, ' ');
             dec_reg(first.c_str());
         }
@@ -726,10 +727,11 @@ string erase(string s){
     return s;
 }
 
-void movFunc(string first, string sec){
+void movFunc(string first, string &sec){
+    char desType;
     if(first.find('[') != string::npos && sec.find('[') == string::npos){
         //mov w[ax], bx
-        char desType = first.at(0);
+        desType = first.at(0);
         first = first.substr(2, first.size()-3);
 
         //TODO BURADA FİRST==VARİABLE KONTROLÜ YAP
@@ -803,6 +805,10 @@ void movFunc(string first, string sec){
         }
     }else{
         //mov dl,[bx]
+        if(sec.at(0) != '[') {
+            desType = sec.at(0);
+            sec = sec.substr(1, sec.size()-1);
+        }
         sec = sec.substr(1, sec.size()-2);
         if (first == "ax") {
             firstParaNo_secParaYes(pax, sec);
@@ -972,16 +978,10 @@ void firstParaNo_secParaNo_mov(regtype *first, string sec){
         if (it == vars.end())
             it = vars.find(sec + "2");
         *first = memory[it->second];
-    }
-    else if (sec.at(sec.size() - 1) == 'h') {
+    } else if (sec.at(sec.size() - 1) == 'h') {
         string s = sec.substr(0, sec.size() - 1);
         *first = hex2dec(s);
-    }
-    else if (sec.at(sec.size() - 1) == '\'') {
-        unsigned char temp = sec.at(sec.size()-2);
-        *first = temp;
-    }
-    else {
+    } else {
         if (sec == "ax") {
             *first = ax;
         } else if (sec == "bx") {
@@ -1060,13 +1060,7 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
         }
         // buraya şu şekilde atılacak -> 12c4h ise ch ı memory[first] , 12 yi memory[first+1]
     }
-    else if(sec.at(sec.size() - 1) == '\'') {
-        unsigned char temp = sec.at(sec.size()-2);
-        memory[*first] = temp;
-        if(desType == 'w')
-        memory[*first + 1] = 0;
-    }
-    else {
+    else{
         if (sec == "ax") {
             hexToArray(memory, ax, *first);
         } else if (sec == "bx") {
@@ -1110,27 +1104,27 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
 }
 
 template <class regtype>
-void firstParaNo_secParaYes(regtype *first ,string sec){
+void firstParaNo_secParaYes(regtype *first ,string &sec){
     if (sec.at(sec.size() - 1) == 'h') {
-        string num = sec.substr(0, sec.size() - 1);
-        *first = memory[hex2dec(num)];
+        sec = sec.substr(0, sec.size() - 1);
+        *first = memory[hex2dec(sec)];
     } else {
         if (sec == "ax") {
-            *first = memory[ax];
+            *first = memory[ax]*256 + memory[ax+1];
         } else if (sec == "bx") {
-            *first = memory[bx];
+            *first = memory[bx]*256 + memory[bx+1];
         } else if (sec == "cx") {
-            *first = memory[cx];
+            *first = memory[cx]*256 + memory[cx+1];
         } else if (sec == "dx") {
-            *first = memory[dx];
+            *first = memory[dx]*256 + memory[dx+1];
         } else if (sec == "di") {
-            *first = memory[di];
+            *first = memory[di]*256 + memory[di+1];
         } else if (sec == "sp") {
-            *first = memory[sp];;
+            *first = memory[sp]*256 + memory[sp+1];
         } else if (sec == "si") {
-            *first = memory[si];
+            *first = memory[si]*256 + memory[si+1];
         } else if (sec == "bp") {
-            *first = memory[bp];
+            *first = memory[bp]*256 + memory[bp+1];
         } else if (sec == "ah") {
             *first = memory[*pah];
         } else if (sec == "al") {
@@ -1153,6 +1147,11 @@ void firstParaNo_secParaYes(regtype *first ,string sec){
             *first = memory[stoi(sec)];
         }
     }
+}
+
+void editStr(string &s) {
+    s.erase(remove(s.begin(),s.end(),' '),s.end());
+    replace(s.begin(), s.end(), ',', ' ');
 }
 
 template <class datatype>
