@@ -27,8 +27,12 @@ string erase(string s);
 template <class datatype> void hexToArray(unsigned char arr[], datatype x, int index);
 bool check_number(string str);
 template <class regtype> void firstParaYes_secParaNo(regtype *first, string sec, char desType);
-template <class regtype> void firstParaNo_secParaNo(regtype *first, string sec);
+template <class regtype> void firstParaNo_secParaNo_add(regtype *first, string sec);
+template <class regtype> void firstParaNo_secParaNo_sub(regtype *first, string sec);
+template <class regtype> void firstParaNo_secParaNo_mov(regtype *first, string sec);
 template <class regtype> void firstParaNo_secParaYes(regtype *first, string sec);
+void addFunc(string first, string sec);
+void subFunc(string first, string sec);
 
 // global variables ( memory, registers and flags )
 unsigned char memory[2<<15];    // 64K memory
@@ -286,12 +290,14 @@ int main(int argc, char* argv[])
         stringstream check1(tmp);
         getline(check1, type, ' ');
         if(type == "mov") {
+
+            //TODO LINE'DAKİ EK BOŞLUKLARI SİLLECEK METODU ÇAĞIR
+
             getline(check1, first, ' ');
             getline(check1, sec, ' ');
             getline(check1, var, ' ');
             if(var != ""){
                 //OFFSET İSE
-                //TODO OFFSET İSE FİRST'DE KÖŞELİ PARANTEZ OLABİLİR
                 if (vars.count((var + "1")) || vars.count((var + "2"))) {
                     map<string, int>::iterator it = vars.begin();
                     it = vars.find(var + "1");
@@ -513,14 +519,14 @@ int main(int argc, char* argv[])
         else if(type == "add"){
             getline(check1, first, ' ');
             getline(check1, sec, ' ');
-            unsigned char c = hex2dec(sec.substr(0,sec.size()-1));
-            add_reg(first.c_str(),c);
+            addFunc(first, sec);
+        }
+        else if(type == "sub"){
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+            subFunc(first, sec);
         }
         else if(type == "inc"){
-            getline(check1, first, ' ');
-            inc_reg(first.c_str());
-        }
-        else if(type == "dec"){
             getline(check1, first, ' ');
             dec_reg(first.c_str());
         }
@@ -561,6 +567,79 @@ int main(int argc, char* argv[])
     print_bits(*pal);
     print_bits(*pah);
     //print_bits(*pax);
+}
+
+void subFunc(string first, string sec) {
+    if (first == "ax") {
+        firstParaNo_secParaNo_sub(pax, sec);
+    } else if (first == "bx") {
+        firstParaNo_secParaNo_sub(pbx, sec);
+    } else if (first == "cx") {
+        firstParaNo_secParaNo_sub(pcx, sec);
+    } else if (first == "dx") {
+        firstParaNo_secParaNo_sub(pdx, sec);
+    } else if (first == "di") {
+        firstParaNo_secParaNo_sub(pdi, sec);
+    } else if (first == "sp") {
+        firstParaNo_secParaNo_sub(psp, sec);
+    } else if (first == "si") {
+        firstParaNo_secParaNo_sub(psi, sec);
+    } else if (first == "bp") {
+        firstParaNo_secParaNo_sub(pbp, sec);
+    } else if (first == "ah") {
+        firstParaNo_secParaNo_sub(pah, sec);
+    } else if (first == "al") {
+        firstParaNo_secParaNo_sub(pal, sec);
+    } else if (first == "bh") {
+        firstParaNo_secParaNo_sub(pbh, sec);
+    } else if (first == "bl") {
+        firstParaNo_secParaNo_sub(pbl, sec);
+    } else if (first == "ch") {
+        firstParaNo_secParaNo_sub(pch, sec);
+    } else if (first == "cl") {
+        firstParaNo_secParaNo_sub(pcl, sec);
+    } else if (first == "dh") {
+        firstParaNo_secParaNo_sub(pdh, sec);
+    } else if (first == "dl") {
+        firstParaNo_secParaNo_sub(pdl, sec);
+    }
+}
+
+
+void addFunc(string first, string sec) {
+    if (first == "ax") {
+        firstParaNo_secParaNo_add(pax, sec);
+    } else if (first == "bx") {
+        firstParaNo_secParaNo_add(pbx, sec);
+    } else if (first == "cx") {
+        firstParaNo_secParaNo_add(pcx, sec);
+    } else if (first == "dx") {
+        firstParaNo_secParaNo_add(pdx, sec);
+    } else if (first == "di") {
+        firstParaNo_secParaNo_add(pdi, sec);
+    } else if (first == "sp") {
+        firstParaNo_secParaNo_add(psp, sec);
+    } else if (first == "si") {
+        firstParaNo_secParaNo_add(psi, sec);
+    } else if (first == "bp") {
+        firstParaNo_secParaNo_add(pbp, sec);
+    } else if (first == "ah") {
+        firstParaNo_secParaNo_add(pah, sec);
+    } else if (first == "al") {
+        firstParaNo_secParaNo_add(pal, sec);
+    } else if (first == "bh") {
+        firstParaNo_secParaNo_add(pbh, sec);
+    } else if (first == "bl") {
+        firstParaNo_secParaNo_add(pbl, sec);
+    } else if (first == "ch") {
+        firstParaNo_secParaNo_add(pch, sec);
+    } else if (first == "cl") {
+        firstParaNo_secParaNo_add(pcl, sec);
+    } else if (first == "dh") {
+        firstParaNo_secParaNo_add(pdh, sec);
+    } else if (first == "dl") {
+        firstParaNo_secParaNo_add(pdl, sec);
+    }
 }
 
 template  <class regtype>
@@ -690,37 +769,37 @@ void movFunc(string first, string sec){
         }
     }else if(first.find('[') == string::npos && sec.find('[') == string::npos){
         if (first == "ax") {
-            firstParaNo_secParaNo(pax, sec);
+            firstParaNo_secParaNo_mov(pax, sec);
         } else if (first == "bx") {
-            firstParaNo_secParaNo(pbx, sec);
+            firstParaNo_secParaNo_mov(pbx, sec);
         } else if (first == "cx") {
-            firstParaNo_secParaNo(pcx, sec);
+            firstParaNo_secParaNo_mov(pcx, sec);
         } else if (first == "dx") {
-            firstParaNo_secParaNo(pdx, sec);
+            firstParaNo_secParaNo_mov(pdx, sec);
         } else if (first == "di") {
-            firstParaNo_secParaNo(pdi, sec);
+            firstParaNo_secParaNo_mov(pdi, sec);
         } else if (first == "sp") {
-            firstParaNo_secParaNo(psp, sec);
+            firstParaNo_secParaNo_mov(psp, sec);
         } else if (first == "si") {
-            firstParaNo_secParaNo(psi, sec);
+            firstParaNo_secParaNo_mov(psi, sec);
         } else if (first == "bp") {
-            firstParaNo_secParaNo(pbp, sec);
+            firstParaNo_secParaNo_mov(pbp, sec);
         } else if (first == "ah") {
-            firstParaNo_secParaNo(pah, sec);
+            firstParaNo_secParaNo_mov(pah, sec);
         } else if (first == "al") {
-            firstParaNo_secParaNo(pal, sec);
+            firstParaNo_secParaNo_mov(pal, sec);
         } else if (first == "bh") {
-            firstParaNo_secParaNo(pbh, sec);
+            firstParaNo_secParaNo_mov(pbh, sec);
         } else if (first == "bl") {
-            firstParaNo_secParaNo(pbl, sec);
+            firstParaNo_secParaNo_mov(pbl, sec);
         } else if (first == "ch") {
-            firstParaNo_secParaNo(pch, sec);
+            firstParaNo_secParaNo_mov(pch, sec);
         } else if (first == "cl") {
-            firstParaNo_secParaNo(pcl, sec);
+            firstParaNo_secParaNo_mov(pcl, sec);
         } else if (first == "dh") {
-            firstParaNo_secParaNo(pdh, sec);
+            firstParaNo_secParaNo_mov(pdh, sec);
         } else if (first == "dl") {
-            firstParaNo_secParaNo(pdl, sec);
+            firstParaNo_secParaNo_mov(pdl, sec);
         }
     }else{
         //mov dl,[bx]
@@ -770,7 +849,123 @@ bool check_number(string str) {
 }
 
 template <class regtype>
-void firstParaNo_secParaNo(regtype *first, string sec){
+void firstParaNo_secParaNo_sub(regtype *first, string sec) {
+    if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
+        map<string, int>::iterator it = vars.begin();
+        it = vars.find(sec + "1");
+        if (it == vars.end())
+            it = vars.find(sec + "2");
+        *first -= memory[it->second];
+    }
+    else if (sec.at(sec.size() - 1) == 'h') {
+        string s = sec.substr(0, sec.size() - 1);
+        *first -= hex2dec(s);
+    }
+    else if (sec.at(sec.size() - 1) == '\'') {
+        unsigned char temp = sec.at(sec.size()-2);
+        *first -= temp;
+    }
+    else {
+        if (sec == "ax") {
+            *first -= ax;
+        } else if (sec == "bx") {
+            *first -= bx;
+        } else if (sec == "cx") {
+            *first -= cx;
+        } else if (sec == "dx") {
+            *first -= dx;
+        } else if (sec == "di") {
+            *first -= di;
+        } else if (sec == "sp") {
+            *first -= sp;
+        } else if (sec == "si") {
+            *first -= si;
+        } else if (sec == "bp") {
+            *first -= bp;
+        } else if (sec == "ah") {
+            *first -= *pah;
+        } else if (sec == "al") {
+            *first -= *pal;
+        } else if (sec == "bh") {
+            *first -= *pbh;
+        } else if (sec == "bl") {
+            *first -= *pbl;
+        } else if (sec == "ch") {
+            *first -= *pch;
+        } else if (sec == "cl") {
+            *first -= *pcl;
+        } else if (sec == "dh") {
+            *first -= *pdh;
+        } else if (sec == "dl") {
+            *first -= *pdl;
+        }
+            //SADECE SAYI İSE
+        else {
+            *first = stoi(sec);
+        }
+    }
+}
+
+template <class regtype>
+void firstParaNo_secParaNo_add(regtype *first, string sec){
+    if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
+        map<string, int>::iterator it = vars.begin();
+        it = vars.find(sec + "1");
+        if (it == vars.end())
+            it = vars.find(sec + "2");
+        *first += memory[it->second];
+    }
+    else if (sec.at(sec.size() - 1) == 'h') {
+        string s = sec.substr(0, sec.size() - 1);
+        *first += hex2dec(s);
+    }
+    else if (sec.at(sec.size() - 1) == '\'') {
+        unsigned char temp = sec.at(sec.size()-2);
+        *first += temp;
+    }
+    else {
+        if (sec == "ax") {
+            *first += ax;
+        } else if (sec == "bx") {
+            *first += bx;
+        } else if (sec == "cx") {
+            *first += cx;
+        } else if (sec == "dx") {
+            *first += dx;
+        } else if (sec == "di") {
+            *first += di;
+        } else if (sec == "sp") {
+            *first += sp;
+        } else if (sec == "si") {
+            *first += si;
+        } else if (sec == "bp") {
+            *first += bp;
+        } else if (sec == "ah") {
+            *first += *pah;
+        } else if (sec == "al") {
+            *first += *pal;
+        } else if (sec == "bh") {
+            *first += *pbh;
+        } else if (sec == "bl") {
+            *first += *pbl;
+        } else if (sec == "ch") {
+            *first += *pch;
+        } else if (sec == "cl") {
+            *first += *pcl;
+        } else if (sec == "dh") {
+            *first += *pdh;
+        } else if (sec == "dl") {
+            *first += *pdl;
+        }
+            //SADECE SAYI İSE
+        else {
+            *first = stoi(sec);
+        }
+    }
+}
+
+template <class regtype>
+void firstParaNo_secParaNo_mov(regtype *first, string sec){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         map<string, int>::iterator it = vars.begin();
         it = vars.find(sec + "1");
@@ -906,6 +1101,8 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
             hexToArray(memory, *pdl, *first);
         }
         else {
+            if(sec.at(sec.size()-1) == 'd')
+                sec = sec.substr(0,sec.size() - 1);
             memory[*first] = stoi(sec);
         }
     }
