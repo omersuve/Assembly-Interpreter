@@ -264,12 +264,13 @@ int main(int argc, char* argv[])
             memory[memoryIdx+1] = data2;
             memoryIdx+=2;
         }else{
-            cout << "ERROR" << endl;
+            cout << "error" << endl;
         }
     }
 
     //ASIL KOD BURADAN BAŞLIYOR
-    for(auto tmp : codelines){
+    for(int i = 0; i < codelines.size(); i++){
+        string tmp = codelines[i];
         editStr(tmp);
         string first;
         string sec;
@@ -395,7 +396,7 @@ int main(int argc, char* argv[])
                 }
             }else {
                 movFunc(first, sec);
-                if(stoi(sec) > 65535) cout << "ERROR" << endl;
+                if(stoi(sec) > 65535) cout << "error" << endl;
             }
             //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
@@ -846,9 +847,6 @@ void movFunc(string first, string &sec) {
         //mov w[ax], bx
         desType = first.at(0);
         first = first.substr(2, first.size()-3);
-
-        //TODO BURADA FİRST==VARİABLE KONTROLÜ YAP
-
         if(first == "ax"){
             firstParaYes_secParaNo(pax, sec, desType);
         } else if(first == "bx"){
@@ -883,7 +881,12 @@ void movFunc(string first, string &sec) {
             firstParaYes_secParaNo(pdl, sec, desType);
         }
     }else if(first.find('[') == string::npos && sec.find('[') == string::npos){
-        if (first == "ax") {
+        if (vars.count((first + "1")) || vars.count((first + "2"))) {
+            auto it = vars.find(first + "1");
+            if (it == vars.end()) it = vars.find(first + "2");
+            unsigned char *pvar = &memory[it->second];
+            firstParaNo_secParaNo_mov(pvar, sec);
+        } else if (first == "ax") {
             firstParaNo_secParaNo_mov(pax, sec);
         } else if (first == "bx") {
             firstParaNo_secParaNo_mov(pbx, sec);
@@ -923,7 +926,12 @@ void movFunc(string first, string &sec) {
             sec = sec.substr(1, sec.size()-1);
         }
         sec = sec.substr(1, sec.size()-2);
-        if (first == "ax") {
+        if (vars.count((first + "1")) || vars.count((first + "2"))) {
+            auto it = vars.find(first + "1");
+            if (it == vars.end()) it = vars.find(first + "2");
+            unsigned char *pvar = &memory[it->second];
+            firstParaNo_secParaYes(pvar, sec);
+        } else if (first == "ax") {
             firstParaNo_secParaYes(pax, sec);
         } else if (first == "bx") {
             firstParaNo_secParaYes(pbx, sec);
@@ -967,6 +975,63 @@ bool check_number(string str) {
     return true;
 }
 */
+
+template <class regtype>
+void firstParaNo_secParaNo_add(regtype *first, string sec){
+    if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
+        auto it = vars.find(sec + "1");
+        if (it == vars.end())
+            it = vars.find(sec + "2");
+        *first += memory[it->second];
+    }
+    else if (sec.at(sec.size() - 1) == 'h') {
+        string s = sec.substr(0, sec.size() - 1);
+        *first += hex2dec(s);
+    }
+    else if (sec.at(sec.size() - 1) == '\'') {
+        unsigned char temp = sec.at(sec.size()-2);
+        *first += temp;
+    }
+    else {
+        if (sec == "ax") {
+            *first += ax;
+        } else if (sec == "bx") {
+            *first += bx;
+        } else if (sec == "cx") {
+            *first += cx;
+        } else if (sec == "dx") {
+            *first += dx;
+        } else if (sec == "di") {
+            *first += di;
+        } else if (sec == "sp") {
+            *first += sp;
+        } else if (sec == "si") {
+            *first += si;
+        } else if (sec == "bp") {
+            *first += bp;
+        } else if (sec == "ah") {
+            *first += *pah;
+        } else if (sec == "al") {
+            *first += *pal;
+        } else if (sec == "bh") {
+            *first += *pbh;
+        } else if (sec == "bl") {
+            *first += *pbl;
+        } else if (sec == "ch") {
+            *first += *pch;
+        } else if (sec == "cl") {
+            *first += *pcl;
+        } else if (sec == "dh") {
+            *first += *pdh;
+        } else if (sec == "dl") {
+            *first += *pdl;
+        }
+            //SADECE SAYI İSE
+        else {
+            *first = stoi(sec);
+        }
+    }
+}
 
 template <class regtype>
 void firstParaNo_secParaNo_sub(regtype *first, string sec) {
@@ -1026,7 +1091,7 @@ void firstParaNo_secParaNo_sub(regtype *first, string sec) {
 }
 
 template <class regtype>
-void firstParaNo_secParaNo_add(regtype *first, string sec){
+void xorF(regtype *first, string sec){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         auto it = vars.find(sec + "1");
         if (it == vars.end())
@@ -1150,7 +1215,7 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
         }
         else {
             if(desType == 'b') {
-                cout << "TYPE MISMATCH ERROR" << endl;
+                cout << "error" << endl;
             }
             else {
                 memory[*first] = hex2dec(num.substr(num.size() - 2, 2));
