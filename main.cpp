@@ -35,6 +35,7 @@ template <class regtype> void firstParaNo_secParaYes(regtype *first, string &sec
 void addFunc(const string& first, const string& sec);
 void subFunc(const string& first, const string& sec);
 void editStr(string &s);
+template <class datatype> void multiplication(datatype y);
 
 // global variables ( memory, registers and flags )
 unsigned char memory[2<<15];    // 64K memory
@@ -235,8 +236,13 @@ int main(int argc, char* argv[])
             memoryIdx += 6;
         }
         else{
-            i++;
-            continue;
+            if(codelines[i].at(codelines[i].size()-1) == ':'){
+                string tmp = codelines[i].substr(0, codelines[i].size()-1);
+                labels.insert(pair<string, int> (tmp, i));
+            }else{
+                cout << "error: irrelevant code" << endl;
+                return 0;
+            }
         }
         i++;
     }
@@ -499,13 +505,45 @@ int main(int argc, char* argv[])
             tmp = tmp.substr(3, tmp.size()-3);
             stringstream check1(tmp);
             getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+            if(first == "ax"){
+                multiplication(*pax);
+                //bölümü dx e , kalanı ax e at
+            } else if(first == "bx"){
+                multiplication(*pbx);
+            } else if(first == "cx"){
+                multiplication(*pcx);
+            } else if(first == "dx"){
+                multiplication(*pdx);
+            } else if(first == "di"){
+                multiplication(*pdi);
+            } else if(first == "sp"){
+                multiplication(*psp);
+            } else if(first == "si"){
+                multiplication(*psi);
+            } else if(first == "bp"){
+                multiplication(*pbp);
+            } else if(first == "ah"){
+                multiplication(*pah);
+            } else if(first == "al"){
+                multiplication(*pal);
+            } else if(first == "bh"){
+                multiplication(*pbh);
+            } else if(first == "bl"){
+                multiplication(*pbl);
+            } else if(first == "ch"){
+                multiplication(*pch);
+            } else if(first == "cl"){
+                multiplication(*pcl);
+            } else if(first == "dh"){
+                multiplication(*pdh);
+            } else if(first == "dl"){
+                multiplication(*pdl);
+            }
         }
         else if(tmp.substr(0, 3) == "div") {
             tmp = tmp.substr(3, tmp.size()-3);
             stringstream check1(tmp);
             getline(check1, first, ' ');
-            getline(check1, sec, ' ');
         }
         else if(tmp.substr(0, 3) == "xor") {
             tmp = tmp.substr(3, tmp.size()-3);
@@ -1397,6 +1435,22 @@ void hexToArray(unsigned char arr[], datatype x, int index){
         unsigned char *rep = (unsigned char *)&tmp;
         arr[index] = rep[1];
         arr[index+1] = rep[0];
+    }
+}
+
+template <class datatype>
+void multiplication(datatype &y){
+    if (sizeof(y) == 1){
+        int tmp = ax*y;
+        int a = pow(2,16);
+        ax = tmp % a;
+        dx = tmp / a;
+    }
+    else{
+        int tmp = (*pal)*(y);
+        int a = pow(2,16);
+        *pal = tmp % a;
+        *pah = tmp / a;
     }
 }
 

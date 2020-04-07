@@ -1,6 +1,7 @@
 code segment
 mov   ax  , offset var1
 mov    bx, 40d
+mul bx
 mov    ax , w  [   100000d   ]
 int 20h
 var1 dw 6c6bh
