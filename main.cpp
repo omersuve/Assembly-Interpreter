@@ -31,8 +31,8 @@ template <class regtype> void firstParaNo_secParaNo_add(regtype *first, string s
 template <class regtype> void firstParaNo_secParaNo_sub(regtype *first, string sec);
 template <class regtype> void firstParaNo_secParaNo_mov(regtype *first, string sec);
 template <class regtype> void firstParaNo_secParaYes(regtype *first, string &sec);
-void addFunc(string first, string sec);
-void subFunc(string first, string sec);
+void addFunc(const string& first, const string& sec);
+void subFunc(const string& first, const string& sec);
 void editStr(string &s);
 
 // global variables ( memory, registers and flags )
@@ -138,13 +138,13 @@ int main(int argc, char* argv[])
         else if(codelines[i].substr(0,3) == "add"){
             memoryIdx += 6;
         }
+        else if(codelines[i].substr(0,3) == "sub"){
+            memoryIdx += 6;
+        }
         else if(codelines[i].substr(0,3) == "dec"){
             memoryIdx += 6;
         }
         else if(codelines[i].substr(0,3) == "inc"){
-            memoryIdx += 6;
-        }
-        else if(codelines[i].substr(0,3) == "sub"){
             memoryIdx += 6;
         }
         else if(codelines[i].substr(0,3) == "mul"){
@@ -264,22 +264,16 @@ int main(int argc, char* argv[])
             memory[memoryIdx+1] = data2;
             memoryIdx+=2;
         }else{
-            cout << "error" << endl;
+            cout << "ERROR" << endl;
         }
     }
 
     //ASIL KOD BURADAN BAŞLIYOR
-    for(int i = 0; i < codelines.size(); i++){
-        string tmp = codelines[i];
+    for(auto tmp : codelines){
         editStr(tmp);
-        //string type;
         string first;
         string sec;
-        //string var = "";
-        //stringstream check1(tmp);
-        //getline(check1, type, ' ');
         if(tmp.substr(0, 3) == "mov") {
-
             tmp = tmp.substr(3, tmp.size()-3);
             stringstream check1(tmp);
             getline(check1, first, ' ');
@@ -289,15 +283,12 @@ int main(int argc, char* argv[])
                 sec = sec.substr(6, sec.size()-6);
                 isOffset = true;
             }
-            //getline(check1, var, ' ');
             if(isOffset){
-                //OFFSET İSE
                 if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-                    map<string, int>::iterator it = vars.begin();
-                    it = vars.find(sec + "1");
+                    auto it = vars.find(sec + "1");
                     if (it == vars.end())
                         it = vars.find(sec + "2");
-                    if(first.find('[') != string::npos && sec.find('[') == string::npos){
+                    if(first.find('[') != string::npos){
                         char desType = first.at(0);
                         first = first.substr(2, first.size()-3);
                         if(first == "ax"){
@@ -350,6 +341,7 @@ int main(int argc, char* argv[])
                         }
                     }else{
                         if(first == "ax"){
+                            //TODO acaba burada ax yerine ah ve al'yi mi değiştirmeliyiz? çünkü ax bu ikisinden oluşuyor
                             ax = it->second;
                         }
                         else if(first == "bx"){
@@ -404,110 +396,6 @@ int main(int argc, char* argv[])
             }else {
                 movFunc(first, sec);
                 if(stoi(sec) > 65535) cout << "ERROR" << endl;
-                /*
-                if (first.find('[') != string::npos) {
-                    char desType = first.at(0);
-                    //TODO SECOND'DA KÖŞELİ VAR MI DİYE BAK
-                    first = first.substr(2, 4);
-                    if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-                        map<string, int>::iterator it;
-                        it = vars.find(sec);
-                        if (it != vars.end())
-                            ax = memory[it->second];
-                    }
-                    else if (sec.at(sec.size() - 1) == 'h') {
-                        var = sec.substr(0, var.size() - 1);
-                        if (desType == 'b' && var.size() > 2) {
-                            cout << "ERROR" << endl;
-                            break;
-                        }
-                        if (desType == 'w' && var.size() < 4) {
-                            cout << "ERROR" << endl;
-                            break;
-                        }
-                        if (first == "ax") {
-                            memory[ax] = hex2dec(var.substr(0, 2));
-                            memory[ax + 1] = hex2dec(var.substr(2, 4));
-                        } else if (first == "bx") {
-                            memory[bx] = hex2dec(var.substr(0, 2));
-                            memory[bx + 1] = hex2dec(var.substr(2, 4));
-                        } else if (first == "cx") {
-                            memory[cx] = hex2dec(var.substr(0, 2));
-                            memory[cx + 1] = hex2dec(var.substr(2, 4));
-                        } else if (first == "dx") {
-                            memory[dx] = hex2dec(var.substr(0, 2));
-                            memory[dx + 1] = hex2dec(var.substr(2, 4));
-                        } else if (first == "di") {
-                            memory[di] = hex2dec(var.substr(0, 2));
-                            memory[di + 1] = hex2dec(var.substr(2, 4));
-                        } else if (first == "sp") {
-                            memory[sp] = hex2dec(var.substr(0, 2));
-                            memory[sp + 1] = hex2dec(var.substr(2, 4));
-                        } else if (first == "si") {
-                            memory[si] = hex2dec(var.substr(0, 2));
-                            memory[si + 1] = hex2dec(var.substr(2, 4));
-                        } else if (first == "bp") {
-                            memory[bp] = hex2dec(var.substr(0, 2));
-                            memory[bp + 1] = hex2dec(var.substr(2, 4));
-                        } else if (first == "ah") {
-                            memory[ah] = hex2dec(var);
-                        } else if (first == "al") {
-                            memory[al] = hex2dec(var);
-                        } else if (first == "bh") {
-                            memory[bh] = hex2dec(var);
-                        } else if (first == "bl") {
-                            memory[bl] = hex2dec(var);
-                        } else if (first == "ch") {
-                            memory[ch] = hex2dec(var);
-                        } else if (first == "cl") {
-                            memory[cl] = hex2dec(var);
-                        } else if (first == "dh") {
-                            memory[dh] = hex2dec(var);
-                        } else if (first == "dl") {
-                            memory[dl] = hex2dec(var);
-                        }
-                    }
-                } else {
-                    //TODO SECOND'DA KÖŞELİ VAR MI DİYE BAK
-                    //TODO ALTTAKİ İF İ FONKSİYON YAP
-                    if (first == "ax") {
-                        if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-                            map<string, int>::iterator it;
-                            it = vars.find(sec);
-                            if (it != vars.end())
-                                ax = memory[it->second];
-                        } else if (sec.at(sec.size() - 1) == 'h') {
-                            string s = sec.substr(0, sec.size() - 1);
-                            ax = hex2dec(s);
-                        } else {
-                            if (sec == "bx") {
-                                mov_reg_reg(pax, pbx);
-                            } else if (sec == "cx") {
-                                mov_reg_reg(pax, pcx);
-                            }
-                                //SADECE SAYI İSE
-                            else {
-                               ax = stoi(sec);
-                            }
-                        }
-                    } else if (first == "bx") {
-
-                    }
-                    //TODO BURADAKİ ELSE-İF GEREKSİZ ŞUANLIK
-                    else if (first == "w[bx]") {
-                        if (sec.at(sec.size() - 1) == 'h') {
-                            string s1 = sec.substr(0, 2);
-                            string s2 = sec.substr(2, 4);
-                            int tmp = bx;
-                            memory[tmp] = hex2dec(s1);
-                            memory[tmp + 1] = hex2dec(s2);
-                        }
-                    } else {
-                    }
-                }
-
-                 */
-
             }
             //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
@@ -529,7 +417,237 @@ int main(int argc, char* argv[])
             tmp = tmp.substr(3, tmp.size()-3);
             stringstream check1(tmp);
             getline(check1, first, ' ');
-            dec_reg(first.c_str());
+            if (first == "ax") {
+                *pax++;
+            } else if (first == "bx") {
+                *pbx++;
+            } else if (first == "cx") {
+                *pcx++;
+            } else if (first == "dx") {
+                *pdx++;
+            } else if (first == "di") {
+                *pdi++;
+            } else if (first == "sp") {
+                *psp++;
+            } else if (first == "si") {
+                *psi++;
+            } else if (first == "bp") {
+                *pbp++;
+            } else if (first == "ah") {
+                *pah++;
+            } else if (first == "al") {
+                *pal++;
+            } else if (first == "bh") {
+                *pbh++;
+            } else if (first == "bl") {
+                *pbl++;
+            } else if (first == "ch") {
+                *pch++;
+            } else if (first == "cl") {
+                *pcl++;
+            } else if (first == "dh") {
+                *pdh++;
+            } else if (first == "dl") {
+                *pdh++;
+            }
+        }
+        else if(tmp.substr(0, 3) == "dec") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            if (first == "ax") {
+                *pax--;
+            } else if (first == "bx") {
+                *pbx--;
+            } else if (first == "cx") {
+                *pcx--;
+            } else if (first == "dx") {
+                *pdx--;
+            } else if (first == "di") {
+                *pdi--;
+            } else if (first == "sp") {
+                *psp--;
+            } else if (first == "si") {
+                *psi--;
+            } else if (first == "bp") {
+                *pbp--;
+            } else if (first == "ah") {
+                *pah--;
+            } else if (first == "al") {
+                *pal--;
+            } else if (first == "bh") {
+                *pbh--;
+            } else if (first == "bl") {
+                *pbl--;
+            } else if (first == "ch") {
+                *pch--;
+            } else if (first == "cl") {
+                *pcl--;
+            } else if (first == "dh") {
+                *pdh--;
+            } else if (first == "dl") {
+                *pdh--;
+            }
+        }
+        else if(tmp.substr(0, 3) == "mul") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "div") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "xor") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 2) == "or") {
+            tmp = tmp.substr(2, tmp.size()-2);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "and") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "not") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "rcl") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "rcr") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "shl") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "shr") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 4) == "push") {
+            tmp = tmp.substr(4, tmp.size()-4);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "pop") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "nop");
+        else if(tmp.substr(0, 3) == "cmp") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 4) == "jnae") {
+            tmp = tmp.substr(4, tmp.size()-4);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 4) == "jnbe") {
+            tmp = tmp.substr(4, tmp.size()-4);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "jae") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "jbe") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "jnb") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "jnc") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "jne") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 3) == "jnz") {
+            tmp = tmp.substr(3, tmp.size()-3);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 2) == "ja") {
+            tmp = tmp.substr(2, tmp.size()-2);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 2) == "jb") {
+            tmp = tmp.substr(2, tmp.size()-2);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 2) == "jc") {
+            tmp = tmp.substr(2, tmp.size()-2);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 2) == "jn") {
+            tmp = tmp.substr(2, tmp.size()-2);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 2) == "jz") {
+            tmp = tmp.substr(2, tmp.size()-2);
+            stringstream check1(tmp);
+            getline(check1, first, ' ');
+            getline(check1, sec, ' ');
+        }
+        else if(tmp.substr(0, 6) == "int21h") {
+
         }
     }
     ax = 3 ;
@@ -570,44 +688,7 @@ int main(int argc, char* argv[])
     //print_bits(*pax);
 }
 
-void subFunc(string first, string sec) {
-    if (first == "ax") {
-        firstParaNo_secParaNo_sub(pax, sec);
-    } else if (first == "bx") {
-        firstParaNo_secParaNo_sub(pbx, sec);
-    } else if (first == "cx") {
-        firstParaNo_secParaNo_sub(pcx, sec);
-    } else if (first == "dx") {
-        firstParaNo_secParaNo_sub(pdx, sec);
-    } else if (first == "di") {
-        firstParaNo_secParaNo_sub(pdi, sec);
-    } else if (first == "sp") {
-        firstParaNo_secParaNo_sub(psp, sec);
-    } else if (first == "si") {
-        firstParaNo_secParaNo_sub(psi, sec);
-    } else if (first == "bp") {
-        firstParaNo_secParaNo_sub(pbp, sec);
-    } else if (first == "ah") {
-        firstParaNo_secParaNo_sub(pah, sec);
-    } else if (first == "al") {
-        firstParaNo_secParaNo_sub(pal, sec);
-    } else if (first == "bh") {
-        firstParaNo_secParaNo_sub(pbh, sec);
-    } else if (first == "bl") {
-        firstParaNo_secParaNo_sub(pbl, sec);
-    } else if (first == "ch") {
-        firstParaNo_secParaNo_sub(pch, sec);
-    } else if (first == "cl") {
-        firstParaNo_secParaNo_sub(pcl, sec);
-    } else if (first == "dh") {
-        firstParaNo_secParaNo_sub(pdh, sec);
-    } else if (first == "dl") {
-        firstParaNo_secParaNo_sub(pdl, sec);
-    }
-}
-
-
-void addFunc(string first, string sec) {
+void addFunc(const string& first, const string& sec) {
     if (first == "ax") {
         firstParaNo_secParaNo_add(pax, sec);
     } else if (first == "bx") {
@@ -643,66 +724,98 @@ void addFunc(string first, string sec) {
     }
 }
 
-template  <class regtype>
-void add_reg(regtype *preg, unsigned char c)
-{
-    preg = preg + c;
+void subFunc(const string& first, const string& sec) {
+    if (first == "ax") {
+        firstParaNo_secParaNo_sub(pax, sec);
+    } else if (first == "bx") {
+        firstParaNo_secParaNo_sub(pbx, sec);
+    } else if (first == "cx") {
+        firstParaNo_secParaNo_sub(pcx, sec);
+    } else if (first == "dx") {
+        firstParaNo_secParaNo_sub(pdx, sec);
+    } else if (first == "di") {
+        firstParaNo_secParaNo_sub(pdi, sec);
+    } else if (first == "sp") {
+        firstParaNo_secParaNo_sub(psp, sec);
+    } else if (first == "si") {
+        firstParaNo_secParaNo_sub(psi, sec);
+    } else if (first == "bp") {
+        firstParaNo_secParaNo_sub(pbp, sec);
+    } else if (first == "ah") {
+        firstParaNo_secParaNo_sub(pah, sec);
+    } else if (first == "al") {
+        firstParaNo_secParaNo_sub(pal, sec);
+    } else if (first == "bh") {
+        firstParaNo_secParaNo_sub(pbh, sec);
+    } else if (first == "bl") {
+        firstParaNo_secParaNo_sub(pbl, sec);
+    } else if (first == "ch") {
+        firstParaNo_secParaNo_sub(pch, sec);
+    } else if (first == "cl") {
+        firstParaNo_secParaNo_sub(pcl, sec);
+    } else if (first == "dh") {
+        firstParaNo_secParaNo_sub(pdh, sec);
+    } else if (first == "dl") {
+        firstParaNo_secParaNo_sub(pdl, sec);
+    }
 }
 
 template  <class regtype>
-void sub_reg(regtype *preg, unsigned char c)
-{
-    *preg = *preg - c;
+void add_reg(regtype *preg, unsigned char c) {
+    *preg += c;
 }
 
-template <class regtype>  void inc_reg(regtype *preg){
+template  <class regtype>
+void sub_reg(regtype *preg, unsigned char c) {
+    *preg -= c;
+}
+
+template <class regtype>
+void inc_reg(regtype *preg) {
     *preg ++;
 }
 
-template <class regtype>  void dec_reg(regtype *preg){
+template <class regtype>
+void dec_reg(regtype *preg) {
     *preg --;
 }
 
 template  <class regtype>
-void mul_reg(regtype *preg)
-{
+void mul_reg(regtype *preg) {
     ax = ax * (*preg);
 }
 
 template  <class regtype>
-void div_reg(regtype *preg)
-{
+void div_reg(regtype *preg) {
     *pal = ax / (*preg);
     *pah = ax % (*preg);
 }
+
 template  <class regtype>
-void or_reg_reg(regtype *preg1, regtype *preg2)
-{
+void or_reg_reg(regtype *preg1, regtype *preg2) {
     *preg1 = (*preg1 | *preg2);
 }
 
 template  <class regtype>
-void and_reg_reg(regtype *preg1, regtype *preg2)
-{
+void and_reg_reg(regtype *preg1, regtype *preg2) {
     *preg1 = (*preg1 & *preg2);
 }
 
 template  <class regtype>
-void xor_reg_reg(regtype *preg1, regtype *preg2)
-{
+void xor_reg_reg(regtype *preg1, regtype *preg2) {
     *preg1 = ((~(*preg1) & (*preg2)) | (~(*preg2) & (*preg1)));
 }
 
 template  <class regtype>
-void not_reg(regtype *preg)
-{
+void not_reg(regtype *preg) {
     *preg = ~(*preg);
 }
 
+/*
 string erase(string s){
     bool a = false;
     for(int i = 0; i < s.size()-1; i++){
-        if(s.at(i) == ' ' && a == false){
+        if(s.at(i) == ' ' && !a){
             s.erase(s.begin() + i);
         }else
             break;
@@ -712,9 +825,8 @@ string erase(string s){
             break;
         }
     }
-    bool b = false;
     for(int i = s.size()-1; i > 0 ; i--){
-        if(s.at(i) == ' ' && b == false){
+        if(s.at(i) == ' '){
             s.erase(s.begin() + s.size()-i);
         } else
             break;
@@ -726,8 +838,9 @@ string erase(string s){
     }
     return s;
 }
+*/
 
-void movFunc(string first, string &sec){
+void movFunc(string first, string &sec) {
     char desType;
     if(first.find('[') != string::npos && sec.find('[') == string::npos){
         //mov w[ax], bx
@@ -845,7 +958,7 @@ void movFunc(string first, string &sec){
         }
     }
 }
-
+/*
 bool check_number(string str) {
     for (int i = 0; i < str.length(); i++){
         if (isdigit(str[i]) == false)
@@ -853,12 +966,12 @@ bool check_number(string str) {
     }
     return true;
 }
+*/
 
 template <class regtype>
 void firstParaNo_secParaNo_sub(regtype *first, string sec) {
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-        map<string, int>::iterator it = vars.begin();
-        it = vars.find(sec + "1");
+        auto it = vars.find(sec + "1");
         if (it == vars.end())
             it = vars.find(sec + "2");
         *first -= memory[it->second];
@@ -915,8 +1028,7 @@ void firstParaNo_secParaNo_sub(regtype *first, string sec) {
 template <class regtype>
 void firstParaNo_secParaNo_add(regtype *first, string sec){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-        map<string, int>::iterator it = vars.begin();
-        it = vars.find(sec + "1");
+        auto it = vars.find(sec + "1");
         if (it == vars.end())
             it = vars.find(sec + "2");
         *first += memory[it->second];
@@ -973,8 +1085,7 @@ void firstParaNo_secParaNo_add(regtype *first, string sec){
 template <class regtype>
 void firstParaNo_secParaNo_mov(regtype *first, string sec){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-        map<string, int>::iterator it = vars.begin();
-        it = vars.find(sec + "1");
+        auto it = vars.find(sec + "1");
         if (it == vars.end())
             it = vars.find(sec + "2");
         *first = memory[it->second];
@@ -1024,20 +1135,8 @@ void firstParaNo_secParaNo_mov(regtype *first, string sec){
 
 template <class regtype>
 void firstParaYes_secParaNo(regtype *first,string sec, char desType){
-    /*
-  if (desType == 'b' && num.size() > 2) {
-      cout << "ERROR" << endl;
-      return;
-  }
-  if (desType == 'w' && num.size() < 4) {
-      cout << "ERROR" << endl;
-      return;
-  }
-   */
-
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-        map<string, int>::iterator it = vars.begin();
-        it = vars.find(sec + "1");
+        auto it = vars.find(sec + "1");
         if (it == vars.end())
             it = vars.find(sec + "2");
         memory[*first] = it->second;
