@@ -1439,7 +1439,7 @@ void hexToArray(unsigned char arr[], datatype x, int index){
 }
 
 template <class datatype>
-void multiplication(datatype &y){
+void multiplication(datatype y){
     if (sizeof(y) == 1){
         int tmp = ax*y;
         int a = pow(2,16);
