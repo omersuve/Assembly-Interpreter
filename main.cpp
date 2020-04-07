@@ -4,6 +4,7 @@
 #include <map>
 #include <sstream>
 #include "cmath"
+#include <algorithm>
 
 using namespace std;
 
@@ -90,7 +91,7 @@ int main(int argc, char* argv[])
     ifstream infile(argv[1]);
     string line = "";
     while(getline(infile, line)){
-        lines.push_back(erase(line));
+        lines.push_back(line);
         /*if(label){
             labels.insert(line, lines.size()-1);
         }
@@ -396,7 +397,6 @@ int main(int argc, char* argv[])
                 }
             }else {
                 movFunc(first, sec);
-                if(stoi(sec) > 65535) cout << "error" << endl;
             }
             //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
@@ -879,6 +879,10 @@ void movFunc(string first, string &sec) {
             firstParaYes_secParaNo(pdh, sec, desType);
         } else if(first == "dl"){
             firstParaYes_secParaNo(pdl, sec, desType);
+        } else{
+
+            // TODO İLKİ REGİSTER OLMAK ZORUNDA DEĞİL. MOV [10D], BX GİBİ
+
         }
     }else if(first.find('[') == string::npos && sec.find('[') == string::npos){
         if (vars.count((first + "1")) || vars.count((first + "2"))) {
@@ -1028,7 +1032,10 @@ void firstParaNo_secParaNo_add(regtype *first, string sec){
         }
             //SADECE SAYI İSE
         else {
-            *first = stoi(sec);
+            if(sec.at(sec.size()-1) == 'd')
+                *first = stoi(sec.substr(0,sec.size()-1));
+            else
+                *first = stoi(sec);
         }
     }
 }
@@ -1085,7 +1092,10 @@ void firstParaNo_secParaNo_sub(regtype *first, string sec) {
         }
             //SADECE SAYI İSE
         else {
-            *first = stoi(sec);
+            if(sec.at(sec.size()-1) == 'd')
+                *first -= stoi(sec.substr(0,sec.size()-1));
+            else
+                *first -= stoi(sec);
         }
     }
 }
@@ -1142,7 +1152,10 @@ void xorF(regtype *first, string sec){
         }
             //SADECE SAYI İSE
         else {
-            *first = stoi(sec);
+            if(sec.at(sec.size()-1) == 'd')
+                *first += stoi(sec.substr(0,sec.size()-1));
+            else
+                *first += stoi(sec);
         }
     }
 }
@@ -1193,13 +1206,20 @@ void firstParaNo_secParaNo_mov(regtype *first, string sec){
         }
             //SADECE SAYI İSE
         else {
-            *first = stoi(sec);
+            if(sec.at(sec.size()-1) == 'd')
+                *first = stoi(sec.substr(0,sec.size()-1));
+            else
+                *first = stoi(sec);
         }
     }
 }
 
 template <class regtype>
 void firstParaYes_secParaNo(regtype *first,string sec, char desType){
+    if(*first > 65535) {
+        cout << "error" << endl;
+        return;
+    }
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         auto it = vars.find(sec + "1");
         if (it == vars.end())
@@ -1308,6 +1328,12 @@ void firstParaNo_secParaYes(regtype *first ,string &sec){
         }
             //SADECE SAYI İSE
         else {
+            if(sec.at(sec.size()-1) == 'd')
+                sec = sec.substr(0,sec.size() - 1);
+            if(stoi(sec) > 65535) {
+                cout << "error" << endl;
+                return;
+            }
             *first = memory[stoi(sec)];
         }
     }
