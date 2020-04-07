@@ -57,6 +57,8 @@ bool     af       ;              // auxillary flag
 bool     of       ;              // overflow flag
 bool     cf       ;              // carry flag
 
+bool isError = false;
+
 // initialize pointers
 unsigned short *pax = &ax ;
 unsigned short *pbx = &bx ;
@@ -265,12 +267,15 @@ int main(int argc, char* argv[])
             memory[memoryIdx+1] = data2;
             memoryIdx+=2;
         }else{
-            cout << "error" << endl;
+            cout << "ERROR" << endl;
+            isError = true;
+            break;
         }
     }
 
     //ASIL KOD BURADAN BAŞLIYOR
     for(int i = 0; i < codelines.size(); i++){
+        if(isError) break;
         string tmp = codelines[i];
         editStr(tmp);
         string first;
@@ -846,7 +851,8 @@ void movFunc(string first, string &sec) {
     if(first.find('[') != string::npos && sec.find('[') == string::npos){
         //mov w[ax], bx
         desType = first.at(0);
-        first = first.substr(2, first.size()-3);
+        if(desType == '[') first = first.substr(1, first.size()-2);
+        else first = first.substr(2, first.size()-3);
         if(first == "ax"){
             firstParaYes_secParaNo(pax, sec, desType);
         } else if(first == "bx"){
@@ -880,10 +886,30 @@ void movFunc(string first, string &sec) {
         } else if(first == "dl"){
             firstParaYes_secParaNo(pdl, sec, desType);
         } else{
-
-            // TODO İLKİ REGİSTER OLMAK ZORUNDA DEĞİL. MOV [10D], BX GİBİ
-
+            if(first.at(first.size()-1) == 'h') {
+                first = first.substr(0, first.size()-1);
+                if(hex2dec(first) > 65535) {
+                    cout << "ERROR" << endl;
+                    isError = true;
+                    return;
+                }
+                unsigned char *pnum = &memory[hex2dec(first)];
+                firstParaYes_secParaNo(pnum, sec, desType);
+            }
+            else {
+                if(first.at(first.size()-1) == 'd') {
+                    first = first.substr(0, first.size()-1);
+                }
+                if(stoi(first) > 65535) {
+                    cout << "ERROR" << endl;
+                    isError = true;
+                    return;
+                }
+                unsigned char *pnum = &memory[stoi(first)];
+                firstParaYes_secParaNo(pnum, sec, desType);
+            }
         }
+        if(isError) return;
     }else if(first.find('[') == string::npos && sec.find('[') == string::npos){
         if (vars.count((first + "1")) || vars.count((first + "2"))) {
             auto it = vars.find(first + "1");
@@ -930,12 +956,7 @@ void movFunc(string first, string &sec) {
             sec = sec.substr(1, sec.size()-1);
         }
         sec = sec.substr(1, sec.size()-2);
-        if (vars.count((first + "1")) || vars.count((first + "2"))) {
-            auto it = vars.find(first + "1");
-            if (it == vars.end()) it = vars.find(first + "2");
-            unsigned char *pvar = &memory[it->second];
-            firstParaNo_secParaYes(pvar, sec);
-        } else if (first == "ax") {
+        if (first == "ax") {
             firstParaNo_secParaYes(pax, sec);
         } else if (first == "bx") {
             firstParaNo_secParaYes(pbx, sec);
@@ -1217,7 +1238,8 @@ void firstParaNo_secParaNo_mov(regtype *first, string sec){
 template <class regtype>
 void firstParaYes_secParaNo(regtype *first,string sec, char desType){
     if(*first > 65535) {
-        cout << "error" << endl;
+        cout << "ERROR" << endl;
+        isError = true;
         return;
     }
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -1227,20 +1249,28 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
         memory[*first] = it->second;
     }
     else if (sec.at(sec.size() - 1) == 'h') {
+        if(sec.at(0) == '0' && sec.size() > 2) sec = sec.substr(1, sec.size()-1);
         string num = sec.substr(0, sec.size() - 1);
-        if(num.size() == 1 || num.size() == 2){
+        if(num.size() == 1 || num.size() == 2) {
             memory[*first] = hex2dec(num);
             if(desType == 'w')
             memory[*first+1] = 0;
         }
-        else {
+        else if(num.size() == 3 || num.size() == 4) {
             if(desType == 'b') {
-                cout << "error" << endl;
+                cout << "ERROR" << endl;
+                isError = true;
+                return;
             }
             else {
                 memory[*first] = hex2dec(num.substr(num.size() - 2, 2));
                 memory[*first + 1] = hex2dec(num.substr(0, num.size() - 2));
             }
+        }
+        else {
+            cout << "ERROR" << endl;
+            isError = true;
+            return;
         }
         // buraya şu şekilde atılacak -> 12c4h ise ch ı memory[first] , 12 yi memory[first+1]
     }
@@ -1331,7 +1361,8 @@ void firstParaNo_secParaYes(regtype *first ,string &sec){
             if(sec.at(sec.size()-1) == 'd')
                 sec = sec.substr(0,sec.size() - 1);
             if(stoi(sec) > 65535) {
-                cout << "error" << endl;
+                cout << "ERROR" << endl;
+                isError = true;
                 return;
             }
             *first = memory[stoi(sec)];
