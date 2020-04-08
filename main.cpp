@@ -1310,16 +1310,32 @@ void xorF(regtype *first, string sec){
 
 template <class regtype>
 void firstParaNo_secParaNo_mov(regtype *first, string sec){
+    //todo iki parametrenin sizelarını kıyasla
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         auto it = vars.find(sec + "1");
         if (it == vars.end())
             it = vars.find(sec + "2");
+        /*if(sizeof(*first) != stoi(it->first.substr(it->first.size()-1))) {
+            cout << "ERROR" << endl;
+            isError = true;
+            return;
+        }*/
         *first = memory[it->second];
     } else if (sec.at(sec.size() - 1) == 'h') {
         string s = sec.substr(0, sec.size() - 1);
+        /*if(sizeof(*first) != sizeof(hex2dec(s))) {
+            cout << "ERROR" << endl;
+            isError = true;
+            return;
+        }*/
         *first = hex2dec(s);
     } else {
         if (sec == "ax") {
+            if(sizeof(*first) == 1) {
+                cout << "ERROR" << endl;
+                isError = true;
+                return;
+            }
             *first = ax;
         } else if (sec == "bx") {
             *first = bx;
@@ -1336,6 +1352,11 @@ void firstParaNo_secParaNo_mov(regtype *first, string sec){
         } else if (sec == "bp") {
             *first = bp;
         } else if (sec == "ah") {
+            if(sizeof(*first) == 2) {
+                cout << "ERROR" << endl;
+                isError = true;
+                return;
+            }
             *first = *pah;
         } else if (sec == "al") {
             *first = *pal;
@@ -1354,10 +1375,13 @@ void firstParaNo_secParaNo_mov(regtype *first, string sec){
         }
             //SADECE SAYI İSE
         else {
-            if(sec.at(sec.size()-1) == 'd')
-                *first = stoi(sec.substr(0,sec.size()-1));
-            else
-                *first = stoi(sec);
+            if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
+            /*if(sizeof(*first) != sizeof(stoi(sec))) {
+                cout << "ERROR" << endl;
+                isError = true;
+                return;
+            }*/
+            *first = stoi(sec);
         }
     }
 }
