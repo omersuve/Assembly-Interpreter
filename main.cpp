@@ -36,6 +36,7 @@ void addFunc(const string& first, const string& sec);
 void subFunc(const string& first, const string& sec);
 void editStr(string &s);
 template <class datatype> void multiplication(datatype y);
+template <class datatype> void division(datatype y);
 
 // global variables ( memory, registers and flags )
 unsigned char memory[2<<15];    // 64K memory
@@ -135,7 +136,8 @@ int main(int argc, char* argv[])
     }
 
     int i = 0;
-    while(codelines[i] != "int 20h") {
+    editStr(codelines[0]);
+    while(codelines[i] != "int20h") {
         if(codelines[i].substr(0,3) == "mov"){
             memoryIdx += 6;
         }
@@ -232,7 +234,7 @@ int main(int argc, char* argv[])
         else if(codelines[i].substr(0,2) == "jc"){
             memoryIdx += 6;
         }
-        else if(codelines[i] == "int 21h"){
+        else if(codelines[i] == "int21h"){
             memoryIdx += 6;
         }
         else{
@@ -245,6 +247,7 @@ int main(int argc, char* argv[])
             }
         }
         i++;
+        editStr(codelines[i]);
     }
     memoryIdx += 6;
 
@@ -283,7 +286,6 @@ int main(int argc, char* argv[])
     for(int i = 0; i < codelines.size(); i++){
         if(isError) break;
         string tmp = codelines[i];
-        editStr(tmp);
         string first;
         string sec;
         if(tmp.substr(0, 3) == "mov") {
@@ -538,12 +540,99 @@ int main(int argc, char* argv[])
                 multiplication(*pdh);
             } else if(first == "dl"){
                 multiplication(*pdl);
+            } else {
+                if(first.at(0) == '[') first = first.substr(1, first.size()-2);
+                else {
+                    first = first.substr(2, first.size()-3);
+                }
+                if(first.at(first.size()-1) == 'h') {
+                    first = first.substr(0, first.size()-1);
+                    if((int) hex2dec(first) > 65535) {
+                        cout << "ERROR" << endl;
+                        isError = true;
+                        return 0;
+                    }
+                    unsigned char *pnum = &memory[hex2dec(first)];
+                    multiplication(*pnum);
+                }
+                else {
+                    if(first.at(first.size()-1) == 'd') {
+                        first = first.substr(0, first.size()-1);
+                    }
+                    if(stoi(first) > 65535) {
+                        cout << "ERROR" << endl;
+                        isError = true;
+                        return 0;
+                    }
+                    unsigned char *pnum = &memory[stoi(first)];
+                    multiplication(*pnum);
+                }
             }
         }
         else if(tmp.substr(0, 3) == "div") {
             tmp = tmp.substr(3, tmp.size()-3);
             stringstream check1(tmp);
             getline(check1, first, ' ');
+            if(first == "ax"){
+                division(*pax);
+            } else if(first == "bx"){
+                division(*pbx);
+            } else if(first == "cx"){
+                division(*pcx);
+            } else if(first == "dx"){
+                division(*pdx);
+            } else if(first == "di"){
+                division(*pdi);
+            } else if(first == "sp"){
+                division(*psp);
+            } else if(first == "si"){
+                division(*psi);
+            } else if(first == "bp"){
+                division(*pbp);
+            } else if(first == "ah"){
+                division(*pah);
+            } else if(first == "al"){
+                division(*pal);
+            } else if(first == "bh"){
+                division(*pbh);
+            } else if(first == "bl"){
+                division(*pbl);
+            } else if(first == "ch"){
+                division(*pch);
+            } else if(first == "cl"){
+                division(*pcl);
+            } else if(first == "dh"){
+                division(*pdh);
+            } else if(first == "dl"){
+                division(*pdl);
+            } else {
+                if(first.at(0) == '[') first = first.substr(1, first.size()-2);
+                else {
+                    first = first.substr(2, first.size()-3);
+                }
+                if(first.at(first.size()-1) == 'h') {
+                    first = first.substr(0, first.size()-1);
+                    if((int) hex2dec(first) > 65535) {
+                        cout << "ERROR" << endl;
+                        isError = true;
+                        return 0;
+                    }
+                    unsigned char *pnum = &memory[hex2dec(first)];
+                    division(*pnum);
+                }
+                else {
+                    if(first.at(first.size()-1) == 'd') {
+                        first = first.substr(0, first.size()-1);
+                    }
+                    if(stoi(first) > 65535) {
+                        cout << "ERROR" << endl;
+                        isError = true;
+                        return 0;
+                    }
+                    unsigned char *pnum = &memory[stoi(first)];
+                    division(*pnum);
+                }
+            }
         }
         else if(tmp.substr(0, 3) == "xor") {
             tmp = tmp.substr(3, tmp.size()-3);
@@ -926,7 +1015,7 @@ void movFunc(string first, string &sec) {
         } else{
             if(first.at(first.size()-1) == 'h') {
                 first = first.substr(0, first.size()-1);
-                if(hex2dec(first) > 65535) {
+                if((int) hex2dec(first) > 65535) {
                     cout << "ERROR" << endl;
                     isError = true;
                     return;
@@ -1440,18 +1529,23 @@ void hexToArray(unsigned char arr[], datatype x, int index){
 
 template <class datatype>
 void multiplication(datatype y){
+    int a = pow(2, 16);
     if (sizeof(y) == 1){
-        int tmp = ax*y;
-        int a = pow(2,16);
-        ax = tmp % a;
-        dx = tmp / a;
-    }
-    else{
         int tmp = (*pal)*(y);
-        int a = pow(2,16);
         *pal = tmp % a;
         *pah = tmp / a;
     }
+    else{
+        int tmp = ax*y;
+        ax = tmp % a;
+        dx = tmp / a;
+    }
+}
+
+template <class datatype>
+void division(datatype y){
+    *pal = ax / y;
+    *pah = ax % y;
 }
 
 template <class datatype>
