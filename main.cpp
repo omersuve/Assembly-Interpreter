@@ -309,10 +309,12 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    //todo bazılarında 'a' durumunu incelemedin!!
     //ASIL KOD BURADAN BAŞLIYOR
     for(int i = 0; i < codelines.size(); i++){
         if(isError) break;
         string tmp = codelines[i];
+        editStr(tmp);
         string first;
         string sec;
         if(tmp.substr(0, 3) == "mov") {
@@ -326,110 +328,58 @@ int main(int argc, char* argv[]) {
                 isOffset = true;
             }
             if(isOffset){
-                if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
+                if(vars.count((sec + "1")) || vars.count((sec + "2"))) {
                     auto it = vars.find(sec + "1");
-                    if (it == vars.end())
-                        it = vars.find(sec + "2");
+                    if(it == vars.end()) it = vars.find(sec + "2");
                     if(first.find('[') != string::npos){
                         char desType = first.at(0);
-                        first = first.substr(2, first.size()-3);
-                        if(first == "ax"){
-                            memory[ax] = it->second;
+                        if(desType == '[') first = first.substr(1, first.size()-2);
+                        else first = first.substr(2, first.size()-3);
+                        auto it1 = regw.find(first);
+                        auto it2 = regb.find(first);
+                        if(it1 == regw.end()) {
+                            if(it2 == regb.end()) {
+                                if(first.at(first.size()-1) == 'h') {
+                                    first = first.substr(0, first.size()-1);
+                                    //todo buraya bak aşağısı hep false
+                                    if(hex2dec(first) > 65535) {
+                                        cout << "ERROR25" << endl;
+                                        isError = true;
+                                        return 0;
+                                    }
+                                    memory[hex2dec(first)] = ~ memory[hex2dec(first)];
+                                }
+                                else {
+                                    if(first.at(first.size()-1) == 'd') first = first.substr(0, first.size()-1);
+                                    if(stoi(first) > 65535) {
+                                        cout << "ERROR25" << endl;
+                                        isError = true;
+                                        return 0;
+                                    }
+                                    memory[stoi(first)] = ~ memory[stoi(first)];
+                                }
+                            }
+                            else memory[*it2->second] = memory[it->second];
                         }
-                        else if(first == "bx"){
-                            memory[bx] = it->second;
-                        }
-                        else if(first == "cx"){
-                            memory[cx] = it->second;
-                        }
-                        else if(first == "dx"){
-                            memory[dx] = it->second;
-                        }
-                        else if(first == "di"){
-                            memory[di] = it->second;
-                        }
-                        else if(first == "sp"){
-                            memory[sp] = it->second;
-                        }
-                        else if(first == "si"){
-                            memory[si] = it->second;
-                        }
-                        else if(first == "bp"){
-                            memory[bp] = it->second;
-                        }
-                        else if(first == "ah"){
-                            memory[*pah] = it->second;
-                        }
-                        else if(first == "al"){
-                            memory[*pal] = it->second;
-                        }
-                        else if(first == "bh"){
-                            memory[*pbh] = it->second;
-                        }
-                        else if(first == "bl"){
-                            memory[*pbl] = it->second;
-                        }
-                        else if(first == "ch"){
-                            memory[*pch] = it->second;
-                        }
-                        else if(first == "cl"){
-                            memory[*pcl] = it->second;
-                        }
-                        else if(first == "dh"){
-                            memory[*pdh]= it->second;
-                        }
-                        else if(first == "dl"){
-                            memory[*pdl] = it->second;
-                        }
+                        else memory[*it1->second] = memory[it->second];
                     }else{
-                        if(first == "ax"){
-                            //TODO acaba burada ax yerine ah ve al'yi mi değiştirmeliyiz? çünkü ax bu ikisinden oluşuyor
-                            ax = it->second;
+                        if(vars.count((first + "1")) || vars.count((first + "2"))) {
+                            auto it0 = vars.find(first + "1");
+                            if(it0 == vars.end()) it0 = vars.find(first + "2");
+                            memory[it0->second] = memory[it->second];
                         }
-                        else if(first == "bx"){
-                            bx = it->second;
-                        }
-                        else if(first == "cx"){
-                            cx = it->second;
-                        }
-                        else if(first == "dx"){
-                            dx = it->second;
-                        }
-                        else if(first == "di"){
-                            di = it->second;
-                        }
-                        else if(first == "sp"){
-                            sp = it->second;
-                        }
-                        else if(first == "si"){
-                            si = it->second;
-                        }
-                        else if(first == "bp"){
-                            bp = it->second;
-                        }
-                        else if(first == "ah"){
-                            *pah = it->second;
-                        }
-                        else if(first == "al"){
-                            *pal = it->second;
-                        }
-                        else if(first == "bh"){
-                            *pbh = it->second;
-                        }
-                        else if(first == "bl"){
-                            *pbl = it->second;
-                        }
-                        else if(first == "ch"){
-                            *pch = it->second;
-                        }
-                        else if(first == "cl"){
-                            *pcl = it->second;
-                        }
-                        else if(first == "dh"){
-                            *pdh = it->second;
-                        }
-                        else if(first == "dl"){
-                            *pdl = it->second;
+                        else {
+                            auto it1 = regw.find(first);
+                            auto it2 = regb.find(first);
+                            if(it1 == regw.end()) {
+                                if (it2 == regb.end()) {
+                                    cout << "ERROR25" << endl;
+                                    isError = true;
+                                    return 0;
+                                }
+                                else *it2->second = memory[it->second];
+                            }
+                            else *it1->second = memory[it->second];
                         }
                     }
                 }else{
@@ -458,76 +408,82 @@ int main(int argc, char* argv[]) {
             tmp = tmp.substr(3, tmp.size()-3);
             stringstream check1(tmp);
             getline(check1, first, ' ');
-            if (first == "ax") {
-                *pax++;
-            } else if (first == "bx") {
-                *pbx++;
-            } else if (first == "cx") {
-                *pcx++;
-            } else if (first == "dx") {
-                *pdx++;
-            } else if (first == "di") {
-                *pdi++;
-            } else if (first == "sp") {
-                *psp++;
-            } else if (first == "si") {
-                *psi++;
-            } else if (first == "bp") {
-                *pbp++;
-            } else if (first == "ah") {
-                *pah++;
-            } else if (first == "al") {
-                *pal++;
-            } else if (first == "bh") {
-                *pbh++;
-            } else if (first == "bl") {
-                *pbl++;
-            } else if (first == "ch") {
-                *pch++;
-            } else if (first == "cl") {
-                *pcl++;
-            } else if (first == "dh") {
-                *pdh++;
-            } else if (first == "dl") {
-                *pdh++;
+            if(first.find('[') != string::npos) {
+                first = first.substr(1, first.size()-2);
+                auto it1 = regw.find(first);
+                auto it2 = regb.find(first);
+                if(it1 == regw.end()) {
+                    if(it2 == regb.end()) {
+                        if(first.at(first.size()-1) == 'h') {
+                            first = first.substr(0, first.size()-1);
+                            //todo always false
+                            if(hex2dec(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            memory[hex2dec(first)]++;
+                        }
+                        else {
+                            if(first.at(first.size()-1) == 'd') first = first.substr(0, first.size()-1);
+                            if(stoi(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            memory[stoi(first)]++;
+                        }
+                    }
+                    else memory[*it2->second]++;
+                }
+                else memory[*it1->second]++;
+            }
+            else {
+                auto it1 = regw.find(first);
+                auto it2 = regb.find(first);
+                if(it1 == regw.end()) *it2->second++;
+                else *it1->second++;
             }
         }
         else if(tmp.substr(0, 3) == "dec") {
             tmp = tmp.substr(3, tmp.size()-3);
             stringstream check1(tmp);
             getline(check1, first, ' ');
-            if (first == "ax") {
-                *pax--;
-            } else if (first == "bx") {
-                *pbx--;
-            } else if (first == "cx") {
-                *pcx--;
-            } else if (first == "dx") {
-                *pdx--;
-            } else if (first == "di") {
-                *pdi--;
-            } else if (first == "sp") {
-                *psp--;
-            } else if (first == "si") {
-                *psi--;
-            } else if (first == "bp") {
-                *pbp--;
-            } else if (first == "ah") {
-                *pah--;
-            } else if (first == "al") {
-                *pal--;
-            } else if (first == "bh") {
-                *pbh--;
-            } else if (first == "bl") {
-                *pbl--;
-            } else if (first == "ch") {
-                *pch--;
-            } else if (first == "cl") {
-                *pcl--;
-            } else if (first == "dh") {
-                *pdh--;
-            } else if (first == "dl") {
-                *pdh--;
+            if(first.find('[') != string::npos) {
+                first = first.substr(1, first.size()-2);
+                auto it1 = regw.find(first);
+                auto it2 = regb.find(first);
+                if(it1 == regw.end()) {
+                    if(it2 == regb.end()) {
+                        if(first.at(first.size()-1) == 'h') {
+                            first = first.substr(0, first.size()-1);
+                            //todo always false
+                            if(hex2dec(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            memory[hex2dec(first)]--;
+                        }
+                        else {
+                            if(first.at(first.size()-1) == 'd') first = first.substr(0, first.size()-1);
+                            if(stoi(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            memory[stoi(first)]--;
+                        }
+                    }
+                    else memory[*it2->second]--;
+                }
+                else memory[*it1->second]--;
+            }
+            else {
+                auto it1 = regw.find(first);
+                auto it2 = regb.find(first);
+                if(it1 == regw.end()) *it2->second--;
+                else *it1->second--;
             }
         }
         else if(tmp.substr(0, 3) == "mul") {
@@ -680,38 +636,11 @@ int main(int argc, char* argv[]) {
                 }
                 else xorFunc_mem(it1->second, sec);
             }
-            else if(first == "ax") {
-                xorFunc_reg(pax, sec);
-            } else if(first == "bx"){
-                xorFunc_reg(pbx, sec);
-            } else if(first == "cx"){
-                xorFunc_reg(pcx, sec);
-            } else if(first == "dx"){
-                xorFunc_reg(pdx, sec);
-            } else if(first == "di"){
-                xorFunc_reg(pdi, sec);
-            } else if(first == "sp"){
-                xorFunc_reg(psp, sec);
-            } else if(first == "si"){
-                xorFunc_reg(psi, sec);
-            } else if(first == "bp"){
-                xorFunc_reg(pbp, sec);
-            } else if(first == "ah"){
-                xorFunc_reg(pah, sec);
-            } else if(first == "al"){
-                xorFunc_reg(pal, sec);
-            } else if(first == "bh"){
-                xorFunc_reg(pbh, sec);
-            } else if(first == "bl"){
-                xorFunc_reg(pbl, sec);
-            } else if(first == "ch"){
-                xorFunc_reg(pch, sec);
-            } else if(first == "cl"){
-                xorFunc_reg(pcl, sec);
-            } else if(first == "dh"){
-                xorFunc_reg(pdh, sec);
-            } else if(first == "dl"){
-                xorFunc_reg(pdl, sec);
+            else {
+                auto it1 = regw.find(first);
+                auto it2 = regb.find(first);
+                if(it1 == regw.end()) xorFunc_reg(it2->second, sec);
+                else xorFunc_reg(it1->second, sec);
             }
         }
         else if(tmp.substr(0, 2) == "or") {
@@ -732,38 +661,11 @@ int main(int argc, char* argv[]) {
                 }
                 else orFunc_mem(it1->second, sec);
             }
-            else if(first == "ax") {
-                orFunc_reg(pax, sec);
-            } else if(first == "bx"){
-                orFunc_reg(pbx, sec);
-            } else if(first == "cx"){
-                orFunc_reg(pcx, sec);
-            } else if(first == "dx"){
-                orFunc_reg(pdx, sec);
-            } else if(first == "di"){
-                orFunc_reg(pdi, sec);
-            } else if(first == "sp"){
-                orFunc_reg(psp, sec);
-            } else if(first == "si"){
-                orFunc_reg(psi, sec);
-            } else if(first == "bp"){
-                orFunc_reg(pbp, sec);
-            } else if(first == "ah"){
-                orFunc_reg(pah, sec);
-            } else if(first == "al"){
-                orFunc_reg(pal, sec);
-            } else if(first == "bh"){
-                orFunc_reg(pbh, sec);
-            } else if(first == "bl"){
-                orFunc_reg(pbl, sec);
-            } else if(first == "ch"){
-                orFunc_reg(pch, sec);
-            } else if(first == "cl"){
-                orFunc_reg(pcl, sec);
-            } else if(first == "dh"){
-                orFunc_reg(pdh, sec);
-            } else if(first == "dl"){
-                orFunc_reg(pdl, sec);
+            else {
+                auto it1 = regw.find(first);
+                auto it2 = regb.find(first);
+                if(it1 == regw.end()) orFunc_reg(it2->second, sec);
+                else orFunc_reg(it1->second, sec);
             }
         }
         else if(tmp.substr(0, 3) == "and") {
@@ -784,38 +686,11 @@ int main(int argc, char* argv[]) {
                 }
                 else andFunc_mem(it1->second, sec);
             }
-            else if(first == "ax") {
-                andFunc_reg(pax, sec);
-            } else if(first == "bx"){
-                andFunc_reg(pbx, sec);
-            } else if(first == "cx"){
-                andFunc_reg(pcx, sec);
-            } else if(first == "dx"){
-                andFunc_reg(pdx, sec);
-            } else if(first == "di"){
-                andFunc_reg(pdi, sec);
-            } else if(first == "sp"){
-                andFunc_reg(psp, sec);
-            } else if(first == "si"){
-                andFunc_reg(psi, sec);
-            } else if(first == "bp"){
-                andFunc_reg(pbp, sec);
-            } else if(first == "ah"){
-                andFunc_reg(pah, sec);
-            } else if(first == "al"){
-                andFunc_reg(pal, sec);
-            } else if(first == "bh"){
-                andFunc_reg(pbh, sec);
-            } else if(first == "bl"){
-                andFunc_reg(pbl, sec);
-            } else if(first == "ch"){
-                andFunc_reg(pch, sec);
-            } else if(first == "cl"){
-                andFunc_reg(pcl, sec);
-            } else if(first == "dh"){
-                andFunc_reg(pdh, sec);
-            } else if(first == "dl"){
-                andFunc_reg(pdl, sec);
+            else {
+                auto it1 = regw.find(first);
+                auto it2 = regb.find(first);
+                if(it1 == regw.end()) andFunc_reg(it2->second, sec);
+                else andFunc_reg(it1->second, sec);
             }
         }
         else if(tmp.substr(0, 3) == "not") {
@@ -886,13 +761,11 @@ int main(int argc, char* argv[]) {
             tmp = tmp.substr(4, tmp.size()-4);
             stringstream check1(tmp);
             getline(check1, first, ' ');
-            getline(check1, sec, ' ');
         }
         else if(tmp.substr(0, 3) == "pop") {
             tmp = tmp.substr(3, tmp.size()-3);
             stringstream check1(tmp);
             getline(check1, first, ' ');
-            getline(check1, sec, ' ');
         }
         else if(tmp.substr(0, 3) == "nop");
         else if(tmp.substr(0, 3) == "cmp") {
@@ -2310,7 +2183,7 @@ unsigned char hex2dec(datatype hex)
     }
     return result;
 }
-
+/*
 void print_16bitregs()
 {
     printf("AX:%04x\n",ax);
@@ -2321,4 +2194,4 @@ void print_16bitregs()
     printf("SP:%04x\n",sp);
     printf("SI:%04x\n",si);
     printf("DI:%04x\n",di);
-}
+}*/
