@@ -15,16 +15,14 @@ template <class regtype>  void add_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void sub_reg(regtype *preg, unsigned char c)  ;
 template <class regtype>  void not_reg(regtype *preg)  ;
 template <class regtype>  void or_reg_reg(regtype *preg1, regtype *preg2)  ;
-template  <typename regtype1, typename regtype2>  void xor_reg_reg(regtype1 *preg1, regtype2 *preg2)  ;
-template  <typename regtype1, typename regtype2>  void xor_mem_reg(regtype1 *preg1, regtype2 *preg2)  ;
-template  <typename regtype1, typename regtype2>  void and_reg_reg(regtype1 *preg1, regtype2 *preg2)  ;
-template  <typename regtype1, typename regtype2>  void and_mem_reg(regtype1 *preg1, regtype2 *preg2)  ;
-template  <typename regtype1, typename regtype2>  void or_reg_reg(regtype1 *preg1, regtype2 *preg2)  ;
-template  <typename regtype1, typename regtype2>  void or_mem_reg(regtype1 *preg1, regtype2 *preg2)  ;
+template  <typename regtype1, typename regtype2>  void xor_reg(regtype1 *preg1, regtype2 *preg2)  ;
+template  <typename regtype1, typename regtype2>  void and_reg(regtype1 *preg1, regtype2 *preg2)  ;
+template  <typename regtype1, typename regtype2>  void or_reg(regtype1 *preg1, regtype2 *preg2)  ;
+template  <typename regtype1, typename regtype2>  void cmp_reg(regtype1 *preg1, regtype2 *preg2)  ;
 template <class regtype>  void and_reg_reg(regtype *preg1, regtype *preg2)  ;
 template <class regtype>  void mul_reg(regtype *preg)  ;
 template <class regtype>  void div_reg(regtype *preg)  ;
-template <class datatype> unsigned char hex2dec(datatype hex);
+int hex2dec(string hex);
 template <class regtype>  void inc_reg(regtype *preg);
 template <class regtype>  void dec_reg(regtype *preg);
 void print_16bitregs() ;
@@ -42,13 +40,10 @@ void subFunc(const string& first, const string& sec);
 void editStr(string &s);
 template <class datatype> void multiplication(datatype y);
 template <class datatype> void division(datatype y);
-template <class regtype> void xorFunc_reg(regtype *first, string sec);
-template <class regtype> void xorFunc_mem(regtype *first, string sec);
-template <class regtype> void andFunc_reg(regtype *first, string sec);
-template <class regtype> void andFunc_mem(regtype *first, string sec);
-template <class regtype> void orFunc_reg(regtype *first, string sec);
-template <class regtype> void orFunc_mem(regtype *first, string sec);
-template <class regtype> void notFunc(regtype *first);
+template <class regtype> void xorFunc(regtype *first, string sec);
+template <class regtype> void andFunc(regtype *first, string sec);
+template <class regtype> void orFunc(regtype *first, string sec);
+template <class regtype> void cmpFunc(regtype *first, string sec);
 
 // global variables ( memory, registers and flags )
 unsigned char memory[2<<15];    // 64K memory
@@ -153,6 +148,7 @@ int main(int argc, char* argv[]) {
             cont = false;
         }
         if(cont){
+            editStr(lines[i]);
             codelines.push_back(lines[i]);
         }
         //cout << lines[i] << endl;
@@ -260,8 +256,7 @@ int main(int argc, char* argv[]) {
         else if(instruction == "jc"){
             memoryIdx += 6;
         }
-        else if(instruction == "int 21h"){
-            getline(check, instruction, ' ');
+        else if(codelines[i] == "int 21h"){
             memoryIdx += 6;
         }
         else{
@@ -313,18 +308,17 @@ int main(int argc, char* argv[]) {
     //ASIL KOD BURADAN BAŞLIYOR
     for(int i = 0; i < codelines.size(); i++){
         if(isError) break;
-        string tmp = codelines[i];
-        editStr(tmp);
+        stringstream check1(codelines[i]);
+        string instruction;
         string first;
         string sec;
-        if(tmp.substr(0, 3) == "mov") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        getline(check1, instruction, ' ');
+        getline(check1, first, ' ');
+        getline(check1, sec, ' ');
+        if(instruction == "mov") {
             bool isOffset = false;
-            if(sec.substr(0,6) == "offset") {
-                sec = sec.substr(6, sec.size()-6);
+            if(sec == "offset") {
+                getline(check1, sec, ' ');
                 isOffset = true;
             }
             if(isOffset){
@@ -390,24 +384,13 @@ int main(int argc, char* argv[]) {
             }
             //VAR IN MEMORYDEKİ ADRESİNİ DÖNMESİ GEREK
         }
-        else if(tmp.substr(0, 3) == "add"){
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "add"){
             addFunc(first, sec);
         }
-        else if(tmp.substr(0, 3) == "sub"){
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "sub"){
             subFunc(first, sec);
         }
-        else if(tmp.substr(0, 3) == "inc"){
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
+        else if(instruction == "inc"){
             if(first.find('[') != string::npos) {
                 first = first.substr(1, first.size()-2);
                 auto it1 = regw.find(first);
@@ -441,14 +424,11 @@ int main(int argc, char* argv[]) {
             else {
                 auto it1 = regw.find(first);
                 auto it2 = regb.find(first);
-                if(it1 == regw.end()) *it2->second++;
-                else *it1->second++;
+                if(it1 == regw.end()) (*it2->second)++;
+                else (*it1->second)++;
             }
         }
-        else if(tmp.substr(0, 3) == "dec") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
+        else if(instruction == "dec") {
             if(first.find('[') != string::npos) {
                 first = first.substr(1, first.size()-2);
                 auto it1 = regw.find(first);
@@ -482,14 +462,11 @@ int main(int argc, char* argv[]) {
             else {
                 auto it1 = regw.find(first);
                 auto it2 = regb.find(first);
-                if(it1 == regw.end()) *it2->second--;
-                else *it1->second--;
+                if(it1 == regw.end()) (*it2->second)--;
+                else (*it1->second)--;
             }
         }
-        else if(tmp.substr(0, 3) == "mul") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
+        else if(instruction == "mul") {
             if(first == "ax"){
                 multiplication(*pax);
                 //bölümü dx e , kalanı ax e at
@@ -552,10 +529,7 @@ int main(int argc, char* argv[]) {
                 }
             }
         }
-        else if(tmp.substr(0, 3) == "div") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
+        else if(instruction == "div") {
             if(first == "ax") {
                 division(*pax);
             } else if(first == "bx"){
@@ -618,85 +592,124 @@ int main(int argc, char* argv[]) {
             }
             if(isError) return 0;
         }
-        else if(tmp.substr(0, 3) == "xor") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "xor") {
             if(first.find('[') != string::npos) {
                 first = first.substr(1, first.size()-2);
                 auto it1 = regw.find(first);
                 auto it2 = regb.find(first);
                 if(it1 == regw.end()) {
                     if(it2 == regb.end()) {
-                        unsigned char *pmem = &memory[stoi(first)];
-                        xorFunc_mem(pmem, sec);
+                        if(first.at(first.size()-1) == 'h') {
+                            first = first.substr(0, first.size()-1);
+                            if(hex2dec(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            unsigned char *ptmp = &memory[hex2dec(first)];
+                            xorFunc(ptmp, sec);
+                        }
+                        else {
+                            if(first.at(first.size()-1) == 'd') first = first.substr(0, first.size()-1);
+                            if(stoi(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            unsigned char *ptmp = &memory[stoi(first)];
+                            xorFunc(ptmp, sec);
+                        }
                     }
-                    else xorFunc_mem(it2->second, sec);
+                    else xorFunc(it2->second, sec);
                 }
-                else xorFunc_mem(it1->second, sec);
+                else xorFunc(it1->second, sec);
             }
             else {
                 auto it1 = regw.find(first);
                 auto it2 = regb.find(first);
-                if(it1 == regw.end()) xorFunc_reg(it2->second, sec);
-                else xorFunc_reg(it1->second, sec);
+                if(it1 == regw.end()) xorFunc(it2->second, sec);
+                else xorFunc(it1->second, sec);
             }
         }
-        else if(tmp.substr(0, 2) == "or") {
-            tmp = tmp.substr(2, tmp.size()-2);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "or") {
             if(first.find('[') != string::npos) {
                 first = first.substr(1, first.size()-2);
                 auto it1 = regw.find(first);
                 auto it2 = regb.find(first);
                 if(it1 == regw.end()) {
                     if(it2 == regb.end()) {
-                        unsigned char *pmem = &memory[stoi(first)];
-                        orFunc_mem(pmem, sec);
+                        if(first.at(first.size()-1) == 'h') {
+                            first = first.substr(0, first.size()-1);
+                            if(hex2dec(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            unsigned char *ptmp = &memory[hex2dec(first)];
+                            orFunc(ptmp, sec);
+                        }
+                        else {
+                            if(first.at(first.size()-1) == 'd') first = first.substr(0, first.size()-1);
+                            if(stoi(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            unsigned char *ptmp = &memory[stoi(first)];
+                            orFunc(ptmp, sec);
+                        }
                     }
-                    else orFunc_mem(it2->second, sec);
+                    else orFunc(it2->second, sec);
                 }
-                else orFunc_mem(it1->second, sec);
+                else orFunc(it1->second, sec);
             }
             else {
                 auto it1 = regw.find(first);
                 auto it2 = regb.find(first);
-                if(it1 == regw.end()) orFunc_reg(it2->second, sec);
-                else orFunc_reg(it1->second, sec);
+                if(it1 == regw.end()) orFunc(it2->second, sec);
+                else orFunc(it1->second, sec);
             }
         }
-        else if(tmp.substr(0, 3) == "and") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "and") {
             if(first.find('[') != string::npos) {
                 first = first.substr(1, first.size()-2);
                 auto it1 = regw.find(first);
                 auto it2 = regb.find(first);
                 if(it1 == regw.end()) {
                     if(it2 == regb.end()) {
-                        unsigned char *pmem = &memory[stoi(first)];
-                        andFunc_mem(pmem, sec);
+                        if(first.at(first.size()-1) == 'h') {
+                            first = first.substr(0, first.size()-1);
+                            if(hex2dec(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            unsigned char *ptmp = &memory[hex2dec(first)];
+                            andFunc(ptmp, sec);
+                        }
+                        else {
+                            if(first.at(first.size()-1) == 'd') first = first.substr(0, first.size()-1);
+                            if(stoi(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            unsigned char *ptmp = &memory[stoi(first)];
+                            andFunc(ptmp, sec);
+                        }
                     }
-                    else andFunc_mem(it2->second, sec);
+                    else andFunc(it2->second, sec);
                 }
-                else andFunc_mem(it1->second, sec);
+                else andFunc(it1->second, sec);
             }
             else {
                 auto it1 = regw.find(first);
                 auto it2 = regb.find(first);
-                if(it1 == regw.end()) andFunc_reg(it2->second, sec);
-                else andFunc_reg(it1->second, sec);
+                if(it1 == regw.end()) andFunc(it2->second, sec);
+                else andFunc(it1->second, sec);
             }
         }
-        else if(tmp.substr(0, 3) == "not") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
+        else if(instruction == "not") {
             if(first.find('[') != string::npos) {
                 first = first.substr(1, first.size()-2);
                 auto it1 = regw.find(first);
@@ -733,127 +746,85 @@ int main(int argc, char* argv[]) {
                 else *it1->second = ~ *it1->second;
             }
         }
-        else if(tmp.substr(0, 3) == "rcl") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "rcl") {
         }
-        else if(tmp.substr(0, 3) == "rcr") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "rcr") {
         }
-        else if(tmp.substr(0, 3) == "shl") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "shl") {
         }
-        else if(tmp.substr(0, 3) == "shr") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "shr") {
         }
-        else if(tmp.substr(0, 4) == "push") {
-            tmp = tmp.substr(4, tmp.size()-4);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
+        else if(instruction == "push") {
         }
-        else if(tmp.substr(0, 3) == "pop") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
+        else if(instruction == "pop") {
         }
-        else if(tmp.substr(0, 3) == "nop");
-        else if(tmp.substr(0, 3) == "cmp") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "nop");
+        else if(instruction == "cmp") {
+            if(first.find('[') != string::npos) {
+                first = first.substr(1, first.size()-2);
+                auto it1 = regw.find(first);
+                auto it2 = regb.find(first);
+                if(it1 == regw.end()) {
+                    if(it2 == regb.end()) {
+                        if(first.at(first.size()-1) == 'h') {
+                            first = first.substr(0, first.size()-1);
+                            if(hex2dec(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            unsigned char *ptmp = &memory[hex2dec(first)];
+                            cmpFunc(ptmp, sec);
+                        }
+                        else {
+                            if(first.at(first.size()-1) == 'd') first = first.substr(0, first.size()-1);
+                            if(stoi(first) > 65535) {
+                                cout << "ERROR25" << endl;
+                                isError = true;
+                                return 0;
+                            }
+                            unsigned char *ptmp = &memory[stoi(first)];
+                            cmpFunc(ptmp, sec);
+                        }
+                    }
+                    else cmpFunc(it2->second, sec);
+                }
+                else cmpFunc(it1->second, sec);
+            }
+            else {
+                auto it1 = regw.find(first);
+                auto it2 = regb.find(first);
+                if(it1 == regw.end()) cmpFunc(it2->second, sec);
+                else cmpFunc(it1->second, sec);
+            }
         }
-        else if(tmp.substr(0, 4) == "jnae") {
-            tmp = tmp.substr(4, tmp.size()-4);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jnae") {
         }
-        else if(tmp.substr(0, 4) == "jnbe") {
-            tmp = tmp.substr(4, tmp.size()-4);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jnbe") {
         }
-        else if(tmp.substr(0, 3) == "jae") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jae") {
         }
-        else if(tmp.substr(0, 3) == "jbe") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jbe") {
         }
-        else if(tmp.substr(0, 3) == "jnb") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jnb") {
         }
-        else if(tmp.substr(0, 3) == "jnc") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jnc") {
         }
-        else if(tmp.substr(0, 3) == "jne") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jne") {
         }
-        else if(tmp.substr(0, 3) == "jnz") {
-            tmp = tmp.substr(3, tmp.size()-3);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jnz") {
         }
-        else if(tmp.substr(0, 2) == "ja") {
-            tmp = tmp.substr(2, tmp.size()-2);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "ja") {
         }
-        else if(tmp.substr(0, 2) == "jb") {
-            tmp = tmp.substr(2, tmp.size()-2);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jb") {
         }
-        else if(tmp.substr(0, 2) == "jc") {
-            tmp = tmp.substr(2, tmp.size()-2);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jc") {
         }
-        else if(tmp.substr(0, 2) == "jn") {
-            tmp = tmp.substr(2, tmp.size()-2);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jn") {
         }
-        else if(tmp.substr(0, 2) == "jz") {
-            tmp = tmp.substr(2, tmp.size()-2);
-            stringstream check1(tmp);
-            getline(check1, first, ' ');
-            getline(check1, sec, ' ');
+        else if(instruction == "jz") {
         }
-        else if(tmp.substr(0, 6) == "int21h") {
-
+        else if(instruction == "int21h") {
         }
     }
     // 1. Read instruction lines
@@ -1315,19 +1286,18 @@ void firstParaNo_secParaNo_sub(regtype *first, string sec) {
 }
 
 template  <typename regtype1, typename regtype2>
-void xor_reg_reg(regtype1 *preg1, regtype2 *preg2) {
+void xor_reg(regtype1 *preg1, regtype2 *preg2) {
     if(sizeof(*preg1) != sizeof(*preg2)) {
         cout << "ERROR23" << endl;
         isError = true;
         return;
     }
-    //*first = ((~(*first) & (*sec)) | (~(*first) & (*sec)));
     *preg1 = *preg1 ^ *preg2;
 }
 
 template <class regtype>
-void xorFunc_reg(regtype *first, string sec){
-    //ilki reg ikincisi reg, mem, var
+void xorFunc(regtype *first, string sec){
+    //ilki reg, mem ikincisi reg, mem, var
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         auto it = vars.find(sec + "1");
         if (it == vars.end()) {
@@ -1373,37 +1343,37 @@ void xorFunc_reg(regtype *first, string sec){
     }
     else {
         if (sec == "ax") {
-            xor_reg_reg(first, pax);
+            xor_reg(first, pax);
         } else if (sec == "bx") {
-            xor_reg_reg(first, pbx);
+            xor_reg(first, pbx);
         } else if (sec == "cx") {
-            xor_reg_reg(first, pcx);
+            xor_reg(first, pcx);
         } else if (sec == "dx") {
-            xor_reg_reg(first, pdx);
+            xor_reg(first, pdx);
         } else if (sec == "di") {
-            xor_reg_reg(first, pdi);
+            xor_reg(first, pdi);
         } else if (sec == "sp") {
-            xor_reg_reg(first, psp);
+            xor_reg(first, psp);
         } else if (sec == "si") {
-            xor_reg_reg(first, psi);
+            xor_reg(first, psi);
         } else if (sec == "bp") {
-            xor_reg_reg(first, pbp);
+            xor_reg(first, pbp);
         } else if (sec == "ah") {
-            xor_reg_reg(first, pah);
+            xor_reg(first, pah);
         } else if (sec == "al") {
-            xor_reg_reg(first, pal);
+            xor_reg(first, pal);
         } else if (sec == "bh") {
-            xor_reg_reg(first, pbh);
+            xor_reg(first, pbh);
         } else if (sec == "bl") {
-            xor_reg_reg(first, pbl);
+            xor_reg(first, pbl);
         } else if (sec == "ch") {
-            xor_reg_reg(first, pch);
+            xor_reg(first, pch);
         } else if (sec == "cl") {
-            xor_reg_reg(first, pcl);
+            xor_reg(first, pcl);
         } else if (sec == "dh") {
-            xor_reg_reg(first, pdh);
+            xor_reg(first, pdh);
         } else if (sec == "dl") {
-            xor_reg_reg(first, pdl);
+            xor_reg(first, pdl);
         }
             //SADECE SAYI İSE
         else {
@@ -1422,93 +1392,17 @@ void xorFunc_reg(regtype *first, string sec){
 }
 
 template  <typename regtype1, typename regtype2>
-void xor_mem_reg(regtype1 *first, regtype2 *sec) {
-    if(sizeof(*sec) == 2) {
-        cout << "ERROR23" << endl;
-        isError = true;
-        return;
-    }
-    //*first = ((~(*first) & (*sec)) | (~(*first) & (*sec)));
-    *first = *first ^ *sec;
-}
-
-template <class regtype>
-void xorFunc_mem(regtype *first, string sec){
-    //ilki mem ikincisi reg, var
-    if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-        auto it = vars.find(sec + "1");
-        if (it == vars.end()) {
-            cout << "ERROR24" << endl;
-            isError = true;
-            return;
-        } else {
-            *first = *first ^ memory[it->second];
-        }
-    }
-    else if (sec.at(sec.size() - 1) == '\'') {
-        unsigned char temp = sec.at(sec.size()-2);
-        *first = *first ^ temp;
-    }
-    else {
-        if (sec == "ax") {
-            xor_mem_reg(first, pax);
-        } else if (sec == "bx") {
-            xor_mem_reg(first, pbx);
-        } else if (sec == "cx") {
-            xor_mem_reg(first, pcx);
-        } else if (sec == "dx") {
-            xor_mem_reg(first, pdx);
-        } else if (sec == "di") {
-            xor_mem_reg(first, pdi);
-        } else if (sec == "sp") {
-            xor_mem_reg(first, psp);
-        } else if (sec == "si") {
-            xor_mem_reg(first, psi);
-        } else if (sec == "bp") {
-            xor_mem_reg(first, pbp);
-        } else if (sec == "ah") {
-            xor_mem_reg(first, pah);
-        } else if (sec == "al") {
-            xor_mem_reg(first, pal);
-        } else if (sec == "bh") {
-            xor_mem_reg(first, pbh);
-        } else if (sec == "bl") {
-            xor_mem_reg(first, pbl);
-        } else if (sec == "ch") {
-            xor_mem_reg(first, pch);
-        } else if (sec == "cl") {
-            xor_mem_reg(first, pcl);
-        } else if (sec == "dh") {
-            xor_mem_reg(first, pdh);
-        } else if (sec == "dl") {
-            xor_mem_reg(first, pdl);
-        }
-            //SADECE SAYI İSE
-        else {
-            if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
-            if(stoi(sec) > 255) {
-                cout << "ERROR22" << endl;
-                isError = true;
-                return;
-            }
-            else *first = *first ^ (unsigned char) stoi(sec.substr(0,sec.size()-1));
-        }
-    }
-}
-
-template  <typename regtype1, typename regtype2>
-void and_reg_reg(regtype1 *preg1, regtype2 *preg2) {
+void and_reg(regtype1 *preg1, regtype2 *preg2) {
     if(sizeof(*preg1) != sizeof(*preg2)) {
         cout << "ERROR23" << endl;
         isError = true;
         return;
     }
-    //*first = ((~(*first) & (*sec)) | (~(*first) & (*sec)));
     *preg1 = *preg1 & *preg2;
 }
 
 template <class regtype>
-void andFunc_reg(regtype *first, string sec){
+void andFunc(regtype *first, string sec){
     //ilki reg ikincisi reg, mem, var
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         auto it = vars.find(sec + "1");
@@ -1555,37 +1449,37 @@ void andFunc_reg(regtype *first, string sec){
     }
     else {
         if (sec == "ax") {
-            xor_reg_reg(first, pax);
+            and_reg(first, pax);
         } else if (sec == "bx") {
-            xor_reg_reg(first, pbx);
+            and_reg(first, pbx);
         } else if (sec == "cx") {
-            xor_reg_reg(first, pcx);
+            and_reg(first, pcx);
         } else if (sec == "dx") {
-            xor_reg_reg(first, pdx);
+            and_reg(first, pdx);
         } else if (sec == "di") {
-            xor_reg_reg(first, pdi);
+            and_reg(first, pdi);
         } else if (sec == "sp") {
-            xor_reg_reg(first, psp);
+            and_reg(first, psp);
         } else if (sec == "si") {
-            xor_reg_reg(first, psi);
+            and_reg(first, psi);
         } else if (sec == "bp") {
-            xor_reg_reg(first, pbp);
+            and_reg(first, pbp);
         } else if (sec == "ah") {
-            xor_reg_reg(first, pah);
+            and_reg(first, pah);
         } else if (sec == "al") {
-            xor_reg_reg(first, pal);
+            and_reg(first, pal);
         } else if (sec == "bh") {
-            xor_reg_reg(first, pbh);
+            and_reg(first, pbh);
         } else if (sec == "bl") {
-            xor_reg_reg(first, pbl);
+            and_reg(first, pbl);
         } else if (sec == "ch") {
-            xor_reg_reg(first, pch);
+            and_reg(first, pch);
         } else if (sec == "cl") {
-            xor_reg_reg(first, pcl);
+            and_reg(first, pcl);
         } else if (sec == "dh") {
-            xor_reg_reg(first, pdh);
+            and_reg(first, pdh);
         } else if (sec == "dl") {
-            xor_reg_reg(first, pdl);
+            and_reg(first, pdl);
         }
             //SADECE SAYI İSE
         else {
@@ -1604,82 +1498,7 @@ void andFunc_reg(regtype *first, string sec){
 }
 
 template  <typename regtype1, typename regtype2>
-void and_mem_reg(regtype1 *first, regtype2 *sec) {
-    if(sizeof(*sec) == 2) {
-        cout << "ERROR23" << endl;
-        isError = true;
-        return;
-    }
-    //*first = ((~(*first) & (*sec)) | (~(*first) & (*sec)));
-    *first = *first & *sec;
-}
-
-template <class regtype>
-void andFunc_mem(regtype *first, string sec){
-    // ilki mem ikincisi reg, var
-    if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-        auto it = vars.find(sec + "1");
-        if (it == vars.end()) {
-            cout << "ERROR24" << endl;
-            isError = true;
-            return;
-        } else {
-            *first = *first & memory[it->second];
-        }
-    }
-    else if (sec.at(sec.size() - 1) == '\'') {
-        unsigned char temp = sec.at(sec.size()-2);
-        *first = *first & temp;
-    }
-    else {
-        if (sec == "ax") {
-            xor_mem_reg(first, pax);
-        } else if (sec == "bx") {
-            xor_mem_reg(first, pbx);
-        } else if (sec == "cx") {
-            xor_mem_reg(first, pcx);
-        } else if (sec == "dx") {
-            xor_mem_reg(first, pdx);
-        } else if (sec == "di") {
-            xor_mem_reg(first, pdi);
-        } else if (sec == "sp") {
-            xor_mem_reg(first, psp);
-        } else if (sec == "si") {
-            xor_mem_reg(first, psi);
-        } else if (sec == "bp") {
-            xor_mem_reg(first, pbp);
-        } else if (sec == "ah") {
-            xor_mem_reg(first, pah);
-        } else if (sec == "al") {
-            xor_mem_reg(first, pal);
-        } else if (sec == "bh") {
-            xor_mem_reg(first, pbh);
-        } else if (sec == "bl") {
-            xor_mem_reg(first, pbl);
-        } else if (sec == "ch") {
-            xor_mem_reg(first, pch);
-        } else if (sec == "cl") {
-            xor_mem_reg(first, pcl);
-        } else if (sec == "dh") {
-            xor_mem_reg(first, pdh);
-        } else if (sec == "dl") {
-            xor_mem_reg(first, pdl);
-        }
-            //SADECE SAYI İSE
-        else {
-            if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
-            if(stoi(sec) > 255) {
-                cout << "ERROR22" << endl;
-                isError = true;
-                return;
-            }
-            else *first = *first & (unsigned char) stoi(sec.substr(0,sec.size()-1));
-        }
-    }
-}
-
-template  <typename regtype1, typename regtype2>
-void or_reg_reg(regtype1 *preg1, regtype2 *preg2) {
+void or_reg(regtype1 *preg1, regtype2 *preg2) {
     if(sizeof(*preg1) != sizeof(*preg2)) {
         cout << "ERROR23" << endl;
         isError = true;
@@ -1690,7 +1509,7 @@ void or_reg_reg(regtype1 *preg1, regtype2 *preg2) {
 }
 
 template <class regtype>
-void orFunc_reg(regtype *first, string sec){
+void orFunc(regtype *first, string sec){
     // ilki reg ikincisi reg, mem, var
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         auto it = vars.find(sec + "1");
@@ -1737,37 +1556,37 @@ void orFunc_reg(regtype *first, string sec){
     }
     else {
         if (sec == "ax") {
-            xor_reg_reg(first, pax);
+            or_reg(first, pax);
         } else if (sec == "bx") {
-            xor_reg_reg(first, pbx);
+            or_reg(first, pbx);
         } else if (sec == "cx") {
-            xor_reg_reg(first, pcx);
+            or_reg(first, pcx);
         } else if (sec == "dx") {
-            xor_reg_reg(first, pdx);
+            or_reg(first, pdx);
         } else if (sec == "di") {
-            xor_reg_reg(first, pdi);
+            or_reg(first, pdi);
         } else if (sec == "sp") {
-            xor_reg_reg(first, psp);
+            or_reg(first, psp);
         } else if (sec == "si") {
-            xor_reg_reg(first, psi);
+            or_reg(first, psi);
         } else if (sec == "bp") {
-            xor_reg_reg(first, pbp);
+            or_reg(first, pbp);
         } else if (sec == "ah") {
-            xor_reg_reg(first, pah);
+            or_reg(first, pah);
         } else if (sec == "al") {
-            xor_reg_reg(first, pal);
+            or_reg(first, pal);
         } else if (sec == "bh") {
-            xor_reg_reg(first, pbh);
+            or_reg(first, pbh);
         } else if (sec == "bl") {
-            xor_reg_reg(first, pbl);
+            or_reg(first, pbl);
         } else if (sec == "ch") {
-            xor_reg_reg(first, pch);
+            or_reg(first, pch);
         } else if (sec == "cl") {
-            xor_reg_reg(first, pcl);
+            or_reg(first, pcl);
         } else if (sec == "dh") {
-            xor_reg_reg(first, pdh);
+            or_reg(first, pdh);
         } else if (sec == "dl") {
-            xor_reg_reg(first, pdl);
+            or_reg(first, pdl);
         }
             //SADECE SAYI İSE
         else {
@@ -1786,83 +1605,141 @@ void orFunc_reg(regtype *first, string sec){
 }
 
 template  <typename regtype1, typename regtype2>
-void or_mem_reg(regtype1 *first, regtype2 *sec) {
-    if(sizeof(*sec) == 2) {
+void cmp_reg(regtype1 *preg1, regtype2 *preg2) {
+    int result;
+    if(sizeof(*preg1) == 1 && sizeof(*preg2) == 2) {
         cout << "ERROR23" << endl;
         isError = true;
         return;
     }
-    //*first = ((~(*first) & (*sec)) | (~(*first) & (*sec)));
-    *first = *first | *sec;
+    else if(sizeof(*preg1) == 2 && sizeof(*preg2) == 1) {
+        auto extended = (unsigned short) *preg2;
+        result = *preg1 - extended;
+    }
+    else result = *preg1 - *preg2;
+    if(result > 0) {
+        zf = 0;
+        cf = 0;
+    }
+    else if(result < 0) {
+        zf = 0;
+        cf = 1;
+    }
+    else {
+        zf = 1;
+        cf = 0;
+    }
 }
 
 template <class regtype>
-void orFunc_mem(regtype *first, string sec){
-    // ilki mem ikincisi reg, var
+void cmpFunc(regtype *first, string sec){
+    //ilki reg, mem ikincisi reg, mem, var
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         auto it = vars.find(sec + "1");
         if (it == vars.end()) {
-            cout << "ERROR24" << endl;
+            it = vars.find(sec + "2");
+            if(sizeof(*first) == 1) {
+                cout << "ERROR22" << endl;
+                isError = true;
+                return;
+            } else {
+                auto tmp = (unsigned short) (memory[it->second+1]*256 + memory[it->second]);
+                unsigned short *ptmp = &tmp;
+                cmp_reg(first, ptmp);
+            }
+        }
+        else {
+            unsigned char *ptmp = &memory[it->second];
+            cmp_reg(first, ptmp);
+        }
+    }
+    else if (sec.at(sec.size() - 1) == 'h') {
+        sec = sec.substr(0, sec.size() - 1);
+        if(sizeof(*first) == 1 && sec.size() > 2) {
+            cout << "ERROR22" << endl;
             isError = true;
             return;
-        } else {
-            *first = *first | memory[it->second];
+        }else {
+            if(sizeof(*first) == 1) {
+                unsigned char tmp = hex2dec(sec);
+                unsigned char *ptmp = &tmp;
+                cmp_reg(first, ptmp);
+            }
+            else {
+                auto tmp = (unsigned short) hex2dec(sec);
+                unsigned short *ptmp = &tmp;
+                cmp_reg(first, ptmp);
+            }
         }
     }
     else if (sec.at(sec.size() - 1) == '\'') {
         unsigned char temp = sec.at(sec.size()-2);
-        *first = *first | temp;
+        if(sizeof(*first) == 2) {
+            auto tmp = (unsigned short) temp;
+            unsigned short *ptmp = &tmp;
+            cmp_reg(first, ptmp);
+        }
+        else {
+            unsigned char *ptmp = &temp;
+            cmp_reg(first, ptmp);
+        }
     }
     else {
         if (sec == "ax") {
-            xor_mem_reg(first, pax);
+            cmp_reg(first, pax);
         } else if (sec == "bx") {
-            xor_mem_reg(first, pbx);
+            cmp_reg(first, pbx);
         } else if (sec == "cx") {
-            xor_mem_reg(first, pcx);
+            cmp_reg(first, pcx);
         } else if (sec == "dx") {
-            xor_mem_reg(first, pdx);
+            cmp_reg(first, pdx);
         } else if (sec == "di") {
-            xor_mem_reg(first, pdi);
+            cmp_reg(first, pdi);
         } else if (sec == "sp") {
-            xor_mem_reg(first, psp);
+            cmp_reg(first, psp);
         } else if (sec == "si") {
-            xor_mem_reg(first, psi);
+            cmp_reg(first, psi);
         } else if (sec == "bp") {
-            xor_mem_reg(first, pbp);
+            cmp_reg(first, pbp);
         } else if (sec == "ah") {
-            xor_mem_reg(first, pah);
+            cmp_reg(first, pah);
         } else if (sec == "al") {
-            xor_mem_reg(first, pal);
+            cmp_reg(first, pal);
         } else if (sec == "bh") {
-            xor_mem_reg(first, pbh);
+            cmp_reg(first, pbh);
         } else if (sec == "bl") {
-            xor_mem_reg(first, pbl);
+            cmp_reg(first, pbl);
         } else if (sec == "ch") {
-            xor_mem_reg(first, pch);
+            cmp_reg(first, pch);
         } else if (sec == "cl") {
-            xor_mem_reg(first, pcl);
+            cmp_reg(first, pcl);
         } else if (sec == "dh") {
-            xor_mem_reg(first, pdh);
+            cmp_reg(first, pdh);
         } else if (sec == "dl") {
-            xor_mem_reg(first, pdl);
+            cmp_reg(first, pdl);
         }
             //SADECE SAYI İSE
         else {
             if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
-            if(stoi(sec) > 255) {
+            if(sizeof(*first) == 1 && stoi(sec) > 255) {
                 cout << "ERROR22" << endl;
                 isError = true;
                 return;
             }
-            else *first = *first | (unsigned char) stoi(sec.substr(0,sec.size()-1));
+            else {
+                if(sizeof(*first) == 1) {
+                    auto tmp = (unsigned char) stoi(sec);
+                    unsigned char *ptmp = &tmp;
+                    cmp_reg(first, ptmp);
+                }
+                else {
+                    auto tmp = (unsigned short) stoi(sec);
+                    unsigned short *ptmp = &tmp;
+                    cmp_reg(first, ptmp);
+                }
+            }
         }
     }
-}
-
-template<class regtype>
-void notFunc(regtype *first) {
-
 }
 
 template <class regtype>
@@ -1899,6 +1776,16 @@ void firstParaNo_secParaNo_mov(regtype *first, string sec){
             return;
         } else {
             *first = hex2dec(sec);
+        }
+    } else if (sec.at(sec.size() - 1) == '\'') {
+        unsigned char temp = sec.at(sec.size()-2);
+        if(sizeof(*first) == 2) {
+            cout << "ERROR12" << endl;
+            isError = true;
+            return;
+        }
+        else {
+            *first = temp;
         }
     } else {
         if (sec == "ax") {
@@ -2104,8 +1991,17 @@ void firstParaNo_secParaYes(regtype *first ,string &sec){
 }
 
 void editStr(string &s) {
-    s.erase(remove(s.begin(),s.end(),' '),s.end());
     replace(s.begin(), s.end(), ',', ' ');
+    string::iterator new_end = unique(s.begin(), s.end(), [=](char lhs, char rhs){return (lhs == rhs) && (lhs == ' '); });
+    s.erase(new_end, s.end());
+    if(s.at(0) == ' ') s = s.substr(1, s.size()-1);
+    if(s.at(s.size()-1) == ' ') s = s.substr(0, s.size()-1);
+    if(s.find("[ ") != string::npos) s.replace(s.find("[ "),2,"[");
+    if(s.find(" ]") != string::npos) s.replace(s.find(" ]"),2,"]");
+    if(s.find("' ") != string::npos) s.replace(s.find("' "),2,"'");
+    s = s + ' ';
+    if(s.find(" ' ") != string::npos) s.replace(s.find(" ' "),3,"'");
+    if(s.at(s.size()-1) == ' ') s = s.substr(0, s.size()-1);
 }
 
 template <class datatype>
@@ -2167,16 +2063,13 @@ void print_hex(datatype x)
     else
         printf("%04x\n",x);
 }
-
-template <class datatype>
-unsigned char hex2dec(datatype hex)
-{
+int hex2dec(string hex) {
     unsigned char result = 0;
     for (int i=0; i<hex.length(); i++) {
         if (hex[i]>=48 && hex[i]<=57){
             result += (hex[i]-48)*pow(16,hex.length()-i-1);
-        } else if (hex[i]>=65 && hex[i]<=70) {
-            result += (hex[i]-55)*pow(16,hex.length( )-i-1);
+        } else if (hex[i]>=65 && hex[i]<=102) {
+            result += (hex[i]-55)*pow(16,hex.length()-i-1);
         } else if (hex[i]>=97 && hex[i]<=102) {
             result += (hex[i]-87)*pow(16,hex.length()-i-1);
         }
