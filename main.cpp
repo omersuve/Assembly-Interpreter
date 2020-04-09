@@ -2181,6 +2181,7 @@ void firstParaNo_secParaYes(regtype *first ,string &sec){
 void editStr(string &s) {
     transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return std::tolower(c); });
     replace(s.begin(), s.end(), ',', ' ');
+    replace(s.begin(), s.end(), '"', '\'');
     string::iterator new_end = unique(s.begin(), s.end(), [=](char lhs, char rhs){return (lhs == rhs) && (lhs == ' '); });
     s.erase(new_end, s.end());
     if(s.at(0) == ' ') s = s.substr(1, s.size()-1);
