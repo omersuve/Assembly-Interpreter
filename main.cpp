@@ -140,6 +140,7 @@ int main(int argc, char* argv[]) {
 
 
     for(int i = 0; i < lines.size(); i++){
+        editStr(lines[i]);
         if(lines[i] == "code segment"){
             cont = true;
             continue;
@@ -148,7 +149,6 @@ int main(int argc, char* argv[]) {
             cont = false;
         }
         if(cont){
-            editStr(lines[i]);
             codelines.push_back(lines[i]);
         }
         //cout << lines[i] << endl;
@@ -274,12 +274,10 @@ int main(int argc, char* argv[]) {
 
     //VARİABLE OKUMA
     for(int j = i+1; j < codelines.size(); j++){
-        string tmp = codelines[j];
-        editStr(tmp);
         string var;
         string type;
         string info;
-        stringstream check1(tmp);
+        stringstream check1(codelines[j]);
         getline(check1, var, ' ');
         getline(check1, type, ' ');
         getline(check1, info, ' ');
@@ -373,7 +371,7 @@ int main(int argc, char* argv[]) {
                                 }
                                 else *it2->second = memory[it->second];
                             }
-                            else *it1->second = memory[it->second];
+                            else *it1->second = memory[it->second+1]*256 + memory[it->second];
                         }
                     }
                 }else{
@@ -824,7 +822,11 @@ int main(int argc, char* argv[]) {
         }
         else if(instruction == "jz") {
         }
-        else if(instruction == "int21h") {
+        else if(codelines[i] == "int 21h") {
+            if(*pah == 1) {
+
+            }
+            else if(*pah == 2) cout << (*pdl) << endl;
         }
     }
     // 1. Read instruction lines
@@ -1172,56 +1174,49 @@ void firstParaNo_secParaNo_add(regtype *first, string sec){
         if (it == vars.end())
             it = vars.find(sec + "2");
         *first += memory[it->second];
-    }
-    else if (sec.at(sec.size() - 1) == 'h') {
+    } else if (sec == "ax") {
+        *first += ax;
+    } else if (sec == "bx") {
+        *first += bx;
+    } else if (sec == "cx") {
+        *first += cx;
+    } else if (sec == "dx") {
+        *first += dx;
+    } else if (sec == "di") {
+        *first += di;
+    } else if (sec == "sp") {
+        *first += sp;
+    } else if (sec == "si") {
+        *first += si;
+    } else if (sec == "bp") {
+        *first += bp;
+    } else if (sec == "ah") {
+        *first += *pah;
+    } else if (sec == "al") {
+        *first += *pal;
+    } else if (sec == "bh") {
+        *first += *pbh;
+    } else if (sec == "bl") {
+        *first += *pbl;
+    } else if (sec == "ch") {
+        *first += *pch;
+    } else if (sec == "cl") {
+        *first += *pcl;
+    } else if (sec == "dh") {
+        *first += *pdh;
+    } else if (sec == "dl") {
+        *first += *pdl;
+    } else if (sec.at(sec.size() - 1) == 'h') {
         string s = sec.substr(0, sec.size() - 1);
         *first += hex2dec(s);
-    }
-    else if (sec.at(sec.size() - 1) == '\'') {
+    } else if (sec.at(sec.size() - 1) == '\'') {
         unsigned char temp = sec.at(sec.size()-2);
         *first += temp;
     }
+           //SADECE SAYI İSE
     else {
-        if (sec == "ax") {
-            *first += ax;
-        } else if (sec == "bx") {
-            *first += bx;
-        } else if (sec == "cx") {
-            *first += cx;
-        } else if (sec == "dx") {
-            *first += dx;
-        } else if (sec == "di") {
-            *first += di;
-        } else if (sec == "sp") {
-            *first += sp;
-        } else if (sec == "si") {
-            *first += si;
-        } else if (sec == "bp") {
-            *first += bp;
-        } else if (sec == "ah") {
-            *first += *pah;
-        } else if (sec == "al") {
-            *first += *pal;
-        } else if (sec == "bh") {
-            *first += *pbh;
-        } else if (sec == "bl") {
-            *first += *pbl;
-        } else if (sec == "ch") {
-            *first += *pch;
-        } else if (sec == "cl") {
-            *first += *pcl;
-        } else if (sec == "dh") {
-            *first += *pdh;
-        } else if (sec == "dl") {
-            *first += *pdl;
-        }
-            //SADECE SAYI İSE
-        else {
-            if(sec.at(sec.size()-1) == 'd')
-                *first = stoi(sec.substr(0,sec.size()-1));
-            else
-                *first = stoi(sec);
-        }
+        if(sec.at(sec.size()-1) == 'd') *first = stoi(sec.substr(0,sec.size()-1));
+        else *first = stoi(sec);
     }
 }
 
@@ -1232,58 +1227,52 @@ void firstParaNo_secParaNo_sub(regtype *first, string sec) {
         if (it == vars.end())
             it = vars.find(sec + "2");
         *first -= memory[it->second];
-    }
-    else if (sec.at(sec.size() - 1) == 'h') {
+    } else if (sec == "ax") {
+        *first -= ax;
+    } else if (sec == "bx") {
+        *first -= bx;
+    } else if (sec == "cx") {
+        *first -= cx;
+    } else if (sec == "dx") {
+        *first -= dx;
+    } else if (sec == "di") {
+        *first -= di;
+    } else if (sec == "sp") {
+        *first -= sp;
+    } else if (sec == "si") {
+        *first -= si;
+    } else if (sec == "bp") {
+        *first -= bp;
+    } else if (sec == "ah") {
+        *first -= *pah;
+    } else if (sec == "al") {
+        *first -= *pal;
+    } else if (sec == "bh") {
+        *first -= *pbh;
+    } else if (sec == "bl") {
+        *first -= *pbl;
+    } else if (sec == "ch") {
+        *first -= *pch;
+    } else if (sec == "cl") {
+        *first -= *pcl;
+    } else if (sec == "dh") {
+        *first -= *pdh;
+    } else if (sec == "dl") {
+        *first -= *pdl;
+    } else if (sec.at(sec.size() - 1) == 'h') {
         string s = sec.substr(0, sec.size() - 1);
         *first -= hex2dec(s);
-    }
-    else if (sec.at(sec.size() - 1) == '\'') {
+    } else if (sec.at(sec.size() - 1) == '\'') {
         unsigned char temp = sec.at(sec.size()-2);
         *first -= temp;
     }
-    else {
-        if (sec == "ax") {
-            *first -= ax;
-        } else if (sec == "bx") {
-            *first -= bx;
-        } else if (sec == "cx") {
-            *first -= cx;
-        } else if (sec == "dx") {
-            *first -= dx;
-        } else if (sec == "di") {
-            *first -= di;
-        } else if (sec == "sp") {
-            *first -= sp;
-        } else if (sec == "si") {
-            *first -= si;
-        } else if (sec == "bp") {
-            *first -= bp;
-        } else if (sec == "ah") {
-            *first -= *pah;
-        } else if (sec == "al") {
-            *first -= *pal;
-        } else if (sec == "bh") {
-            *first -= *pbh;
-        } else if (sec == "bl") {
-            *first -= *pbl;
-        } else if (sec == "ch") {
-            *first -= *pch;
-        } else if (sec == "cl") {
-            *first -= *pcl;
-        } else if (sec == "dh") {
-            *first -= *pdh;
-        } else if (sec == "dl") {
-            *first -= *pdl;
-        }
             //SADECE SAYI İSE
-        else {
-            if(sec.at(sec.size()-1) == 'd')
-                *first -= stoi(sec.substr(0,sec.size()-1));
-            else
-                *first -= stoi(sec);
-        }
+    else {
+        if(sec.at(sec.size()-1) == 'd') *first -= stoi(sec.substr(0,sec.size()-1));
+        else *first -= stoi(sec);
     }
 }
+
 
 template  <typename regtype1, typename regtype2>
 void xor_reg(regtype1 *preg1, regtype2 *preg2) {
@@ -1318,8 +1307,39 @@ void xorFunc(regtype *first, string sec){
                 *first = *first ^ memory[it->second];
             }
         }
-    }
-    else if (sec.at(sec.size() - 1) == 'h') {
+    } else if (sec == "ax") {
+        xor_reg(first, pax);
+    } else if (sec == "bx") {
+        xor_reg(first, pbx);
+    } else if (sec == "cx") {
+        xor_reg(first, pcx);
+    } else if (sec == "dx") {
+        xor_reg(first, pdx);
+    } else if (sec == "di") {
+        xor_reg(first, pdi);
+    } else if (sec == "sp") {
+        xor_reg(first, psp);
+    } else if (sec == "si") {
+        xor_reg(first, psi);
+    } else if (sec == "bp") {
+        xor_reg(first, pbp);
+    } else if (sec == "ah") {
+        xor_reg(first, pah);
+    } else if (sec == "al") {
+        xor_reg(first, pal);
+    } else if (sec == "bh") {
+        xor_reg(first, pbh);
+    } else if (sec == "bl") {
+        xor_reg(first, pbl);
+    } else if (sec == "ch") {
+        xor_reg(first, pch);
+    } else if (sec == "cl") {
+        xor_reg(first, pcl);
+    } else if (sec == "dh") {
+        xor_reg(first, pdh);
+    } else if (sec == "dl") {
+        xor_reg(first, pdl);
+    } else if (sec.at(sec.size() - 1) == 'h') {
         sec = sec.substr(0, sec.size() - 1);
         if(sizeof(*first) == 1 && sec.size() > 2) {
             cout << "ERROR22" << endl;
@@ -1329,8 +1349,7 @@ void xorFunc(regtype *first, string sec){
             if(sizeof(*first) == 1) *first = *first ^ hex2dec(sec);
             else *first = *first ^ (unsigned short) hex2dec(sec);
         }
-    }
-    else if (sec.at(sec.size() - 1) == '\'') {
+    } else if (sec.at(sec.size() - 1) == '\'') {
         unsigned char temp = sec.at(sec.size()-2);
         if(sizeof(*first) == 2) {
             cout << "ERROR22" << endl;
@@ -1341,52 +1360,17 @@ void xorFunc(regtype *first, string sec){
             else *first = *first ^ (unsigned short) temp;
         }
     }
-    else {
-        if (sec == "ax") {
-            xor_reg(first, pax);
-        } else if (sec == "bx") {
-            xor_reg(first, pbx);
-        } else if (sec == "cx") {
-            xor_reg(first, pcx);
-        } else if (sec == "dx") {
-            xor_reg(first, pdx);
-        } else if (sec == "di") {
-            xor_reg(first, pdi);
-        } else if (sec == "sp") {
-            xor_reg(first, psp);
-        } else if (sec == "si") {
-            xor_reg(first, psi);
-        } else if (sec == "bp") {
-            xor_reg(first, pbp);
-        } else if (sec == "ah") {
-            xor_reg(first, pah);
-        } else if (sec == "al") {
-            xor_reg(first, pal);
-        } else if (sec == "bh") {
-            xor_reg(first, pbh);
-        } else if (sec == "bl") {
-            xor_reg(first, pbl);
-        } else if (sec == "ch") {
-            xor_reg(first, pch);
-        } else if (sec == "cl") {
-            xor_reg(first, pcl);
-        } else if (sec == "dh") {
-            xor_reg(first, pdh);
-        } else if (sec == "dl") {
-            xor_reg(first, pdl);
-        }
             //SADECE SAYI İSE
+    else {
+        if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
+        if(sizeof(*first) == 1 && stoi(sec) > 255) {
+            cout << "ERROR22" << endl;
+            isError = true;
+            return;
+        }
         else {
-            if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
-            if(sizeof(*first) == 1 && stoi(sec) > 255) {
-                cout << "ERROR22" << endl;
-                isError = true;
-                return;
-            }
-            else {
-                if(sizeof(*first) == 1) *first = *first ^ (unsigned char) stoi(sec.substr(0,sec.size()-1));
-                else *first = *first ^ (unsigned short) stoi(sec.substr(0,sec.size()-1));
-            }
+            if(sizeof(*first) == 1) *first = *first ^ (unsigned char) stoi(sec.substr(0,sec.size()-1));
+            else *first = *first ^ (unsigned short) stoi(sec.substr(0,sec.size()-1));
         }
     }
 }
@@ -1424,8 +1408,39 @@ void andFunc(regtype *first, string sec){
                 *first = *first & memory[it->second];
             }
         }
-    }
-    else if (sec.at(sec.size() - 1) == 'h') {
+    } else if (sec == "ax") {
+        and_reg(first, pax);
+    } else if (sec == "bx") {
+        and_reg(first, pbx);
+    } else if (sec == "cx") {
+        and_reg(first, pcx);
+    } else if (sec == "dx") {
+        and_reg(first, pdx);
+    } else if (sec == "di") {
+        and_reg(first, pdi);
+    } else if (sec == "sp") {
+        and_reg(first, psp);
+    } else if (sec == "si") {
+        and_reg(first, psi);
+    } else if (sec == "bp") {
+        and_reg(first, pbp);
+    } else if (sec == "ah") {
+        and_reg(first, pah);
+    } else if (sec == "al") {
+        and_reg(first, pal);
+    } else if (sec == "bh") {
+        and_reg(first, pbh);
+    } else if (sec == "bl") {
+        and_reg(first, pbl);
+    } else if (sec == "ch") {
+        and_reg(first, pch);
+    } else if (sec == "cl") {
+        and_reg(first, pcl);
+    } else if (sec == "dh") {
+        and_reg(first, pdh);
+    } else if (sec == "dl") {
+        and_reg(first, pdl);
+    } else if (sec.at(sec.size() - 1) == 'h') {
         sec = sec.substr(0, sec.size() - 1);
         if(sizeof(*first) == 1 && sec.size() > 2) {
             cout << "ERROR22" << endl;
@@ -1435,8 +1450,7 @@ void andFunc(regtype *first, string sec){
             if(sizeof(*first) == 1) *first = *first & hex2dec(sec);
             else *first = *first & (unsigned short) hex2dec(sec);
         }
-    }
-    else if (sec.at(sec.size() - 1) == '\'') {
+    } else if (sec.at(sec.size() - 1) == '\'') {
         unsigned char temp = sec.at(sec.size()-2);
         if(sizeof(*first) == 2) {
             cout << "ERROR22" << endl;
@@ -1447,52 +1461,17 @@ void andFunc(regtype *first, string sec){
             else *first = *first & (unsigned short) temp;
         }
     }
+        //SADECE SAYI İSE
     else {
-        if (sec == "ax") {
-            and_reg(first, pax);
-        } else if (sec == "bx") {
-            and_reg(first, pbx);
-        } else if (sec == "cx") {
-            and_reg(first, pcx);
-        } else if (sec == "dx") {
-            and_reg(first, pdx);
-        } else if (sec == "di") {
-            and_reg(first, pdi);
-        } else if (sec == "sp") {
-            and_reg(first, psp);
-        } else if (sec == "si") {
-            and_reg(first, psi);
-        } else if (sec == "bp") {
-            and_reg(first, pbp);
-        } else if (sec == "ah") {
-            and_reg(first, pah);
-        } else if (sec == "al") {
-            and_reg(first, pal);
-        } else if (sec == "bh") {
-            and_reg(first, pbh);
-        } else if (sec == "bl") {
-            and_reg(first, pbl);
-        } else if (sec == "ch") {
-            and_reg(first, pch);
-        } else if (sec == "cl") {
-            and_reg(first, pcl);
-        } else if (sec == "dh") {
-            and_reg(first, pdh);
-        } else if (sec == "dl") {
-            and_reg(first, pdl);
+        if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
+        if(sizeof(*first) == 1 && stoi(sec) > 255) {
+            cout << "ERROR22" << endl;
+            isError = true;
+            return;
         }
-            //SADECE SAYI İSE
         else {
-            if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
-            if(sizeof(*first) == 1 && stoi(sec) > 255) {
-                cout << "ERROR22" << endl;
-                isError = true;
-                return;
-            }
-            else {
-                if(sizeof(*first) == 1) *first = *first & (unsigned char) stoi(sec.substr(0,sec.size()-1));
-                else *first = *first & (unsigned short) stoi(sec.substr(0,sec.size()-1));
-            }
+            if(sizeof(*first) == 1) *first = *first & (unsigned char) stoi(sec.substr(0,sec.size()-1));
+            else *first = *first & (unsigned short) stoi(sec.substr(0,sec.size()-1));
         }
     }
 }
@@ -1531,8 +1510,39 @@ void orFunc(regtype *first, string sec){
                 *first = *first | memory[it->second];
             }
         }
-    }
-    else if (sec.at(sec.size() - 1) == 'h') {
+    } else if (sec == "ax") {
+        or_reg(first, pax);
+    } else if (sec == "bx") {
+        or_reg(first, pbx);
+    } else if (sec == "cx") {
+        or_reg(first, pcx);
+    } else if (sec == "dx") {
+        or_reg(first, pdx);
+    } else if (sec == "di") {
+        or_reg(first, pdi);
+    } else if (sec == "sp") {
+        or_reg(first, psp);
+    } else if (sec == "si") {
+        or_reg(first, psi);
+    } else if (sec == "bp") {
+        or_reg(first, pbp);
+    } else if (sec == "ah") {
+        or_reg(first, pah);
+    } else if (sec == "al") {
+        or_reg(first, pal);
+    } else if (sec == "bh") {
+        or_reg(first, pbh);
+    } else if (sec == "bl") {
+        or_reg(first, pbl);
+    } else if (sec == "ch") {
+        or_reg(first, pch);
+    } else if (sec == "cl") {
+        or_reg(first, pcl);
+    } else if (sec == "dh") {
+        or_reg(first, pdh);
+    } else if (sec == "dl") {
+        or_reg(first, pdl);
+    } else if (sec.at(sec.size() - 1) == 'h') {
         sec = sec.substr(0, sec.size() - 1);
         if(sizeof(*first) == 1 && sec.size() > 2) {
             cout << "ERROR22" << endl;
@@ -1542,8 +1552,7 @@ void orFunc(regtype *first, string sec){
             if(sizeof(*first) == 1) *first = *first | hex2dec(sec);
             else *first = *first | (unsigned short) hex2dec(sec);
         }
-    }
-    else if (sec.at(sec.size() - 1) == '\'') {
+    } else if (sec.at(sec.size() - 1) == '\'') {
         unsigned char temp = sec.at(sec.size()-2);
         if(sizeof(*first) == 2) {
             cout << "ERROR22" << endl;
@@ -1554,52 +1563,17 @@ void orFunc(regtype *first, string sec){
             else *first = *first | (unsigned short) temp;
         }
     }
+        //SADECE SAYI İSE
     else {
-        if (sec == "ax") {
-            or_reg(first, pax);
-        } else if (sec == "bx") {
-            or_reg(first, pbx);
-        } else if (sec == "cx") {
-            or_reg(first, pcx);
-        } else if (sec == "dx") {
-            or_reg(first, pdx);
-        } else if (sec == "di") {
-            or_reg(first, pdi);
-        } else if (sec == "sp") {
-            or_reg(first, psp);
-        } else if (sec == "si") {
-            or_reg(first, psi);
-        } else if (sec == "bp") {
-            or_reg(first, pbp);
-        } else if (sec == "ah") {
-            or_reg(first, pah);
-        } else if (sec == "al") {
-            or_reg(first, pal);
-        } else if (sec == "bh") {
-            or_reg(first, pbh);
-        } else if (sec == "bl") {
-            or_reg(first, pbl);
-        } else if (sec == "ch") {
-            or_reg(first, pch);
-        } else if (sec == "cl") {
-            or_reg(first, pcl);
-        } else if (sec == "dh") {
-            or_reg(first, pdh);
-        } else if (sec == "dl") {
-            or_reg(first, pdl);
+        if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
+        if(sizeof(*first) == 1 && stoi(sec) > 255) {
+            cout << "ERROR22" << endl;
+            isError = true;
+            return;
         }
-            //SADECE SAYI İSE
         else {
-            if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
-            if(sizeof(*first) == 1 && stoi(sec) > 255) {
-                cout << "ERROR22" << endl;
-                isError = true;
-                return;
-            }
-            else {
-                if(sizeof(*first) == 1) *first = *first | (unsigned char) stoi(sec.substr(0,sec.size()-1));
-                else *first = *first | (unsigned short) stoi(sec.substr(0,sec.size()-1));
-            }
+            if(sizeof(*first) == 1) *first = *first | (unsigned char) stoi(sec.substr(0,sec.size()-1));
+            else *first = *first | (unsigned short) stoi(sec.substr(0,sec.size()-1));
         }
     }
 }
@@ -1652,8 +1626,39 @@ void cmpFunc(regtype *first, string sec){
             unsigned char *ptmp = &memory[it->second];
             cmp_reg(first, ptmp);
         }
-    }
-    else if (sec.at(sec.size() - 1) == 'h') {
+    } else if (sec == "ax") {
+        cmp_reg(first, pax);
+    } else if (sec == "bx") {
+        cmp_reg(first, pbx);
+    } else if (sec == "cx") {
+        cmp_reg(first, pcx);
+    } else if (sec == "dx") {
+        cmp_reg(first, pdx);
+    } else if (sec == "di") {
+        cmp_reg(first, pdi);
+    } else if (sec == "sp") {
+        cmp_reg(first, psp);
+    } else if (sec == "si") {
+        cmp_reg(first, psi);
+    } else if (sec == "bp") {
+        cmp_reg(first, pbp);
+    } else if (sec == "ah") {
+        cmp_reg(first, pah);
+    } else if (sec == "al") {
+        cmp_reg(first, pal);
+    } else if (sec == "bh") {
+        cmp_reg(first, pbh);
+    } else if (sec == "bl") {
+        cmp_reg(first, pbl);
+    } else if (sec == "ch") {
+        cmp_reg(first, pch);
+    } else if (sec == "cl") {
+        cmp_reg(first, pcl);
+    } else if (sec == "dh") {
+        cmp_reg(first, pdh);
+    } else if (sec == "dl") {
+        cmp_reg(first, pdl);
+    } else if (sec.at(sec.size() - 1) == 'h') {
         sec = sec.substr(0, sec.size() - 1);
         if(sizeof(*first) == 1 && sec.size() > 2) {
             cout << "ERROR22" << endl;
@@ -1671,8 +1676,7 @@ void cmpFunc(regtype *first, string sec){
                 cmp_reg(first, ptmp);
             }
         }
-    }
-    else if (sec.at(sec.size() - 1) == '\'') {
+    } else if (sec.at(sec.size() - 1) == '\'') {
         unsigned char temp = sec.at(sec.size()-2);
         if(sizeof(*first) == 2) {
             auto tmp = (unsigned short) temp;
@@ -1684,59 +1688,24 @@ void cmpFunc(regtype *first, string sec){
             cmp_reg(first, ptmp);
         }
     }
+        //SADECE SAYI İSE
     else {
-        if (sec == "ax") {
-            cmp_reg(first, pax);
-        } else if (sec == "bx") {
-            cmp_reg(first, pbx);
-        } else if (sec == "cx") {
-            cmp_reg(first, pcx);
-        } else if (sec == "dx") {
-            cmp_reg(first, pdx);
-        } else if (sec == "di") {
-            cmp_reg(first, pdi);
-        } else if (sec == "sp") {
-            cmp_reg(first, psp);
-        } else if (sec == "si") {
-            cmp_reg(first, psi);
-        } else if (sec == "bp") {
-            cmp_reg(first, pbp);
-        } else if (sec == "ah") {
-            cmp_reg(first, pah);
-        } else if (sec == "al") {
-            cmp_reg(first, pal);
-        } else if (sec == "bh") {
-            cmp_reg(first, pbh);
-        } else if (sec == "bl") {
-            cmp_reg(first, pbl);
-        } else if (sec == "ch") {
-            cmp_reg(first, pch);
-        } else if (sec == "cl") {
-            cmp_reg(first, pcl);
-        } else if (sec == "dh") {
-            cmp_reg(first, pdh);
-        } else if (sec == "dl") {
-            cmp_reg(first, pdl);
+        if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
+        if(sizeof(*first) == 1 && stoi(sec) > 255) {
+            cout << "ERROR22" << endl;
+            isError = true;
+            return;
         }
-            //SADECE SAYI İSE
         else {
-            if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
-            if(sizeof(*first) == 1 && stoi(sec) > 255) {
-                cout << "ERROR22" << endl;
-                isError = true;
-                return;
+            if(sizeof(*first) == 1) {
+                auto tmp = (unsigned char) stoi(sec);
+                unsigned char *ptmp = &tmp;
+                cmp_reg(first, ptmp);
             }
             else {
-                if(sizeof(*first) == 1) {
-                    auto tmp = (unsigned char) stoi(sec);
-                    unsigned char *ptmp = &tmp;
-                    cmp_reg(first, ptmp);
-                }
-                else {
-                    auto tmp = (unsigned short) stoi(sec);
-                    unsigned short *ptmp = &tmp;
-                    cmp_reg(first, ptmp);
-                }
+                auto tmp = (unsigned short) stoi(sec);
+                unsigned short *ptmp = &tmp;
+                cmp_reg(first, ptmp);
             }
         }
     }
@@ -1767,6 +1736,48 @@ void firstParaNo_secParaNo_mov(regtype *first, string sec){
                 *first = memory[it->second];
             }
         }
+    } else if (sec == "ax") {
+        if(sizeof(*first) == 1) {
+            cout << "ERROR13" << endl;
+            isError = true;
+            return;
+        }
+        *first = ax;
+    } else if (sec == "bx") {
+        *first = bx;
+    } else if (sec == "cx") {
+        *first = cx;
+    } else if (sec == "dx") {
+        *first = dx;
+    } else if (sec == "di") {
+        *first = di;
+    } else if (sec == "sp") {
+        *first = sp;
+    } else if (sec == "si") {
+        *first = si;
+    } else if (sec == "bp") {
+        *first = bp;
+    } else if (sec == "ah") {
+        if(sizeof(*first) == 2) {
+            cout << "ERROR14" << endl;
+            isError = true;
+            return;
+        }
+        *first = *pah;
+    } else if (sec == "al") {
+        *first = *pal;
+    } else if (sec == "bh") {
+        *first = *pbh;
+    } else if (sec == "bl") {
+        *first = *pbl;
+    } else if (sec == "ch") {
+        *first = *pch;
+    } else if (sec == "cl") {
+        *first = *pcl;
+    } else if (sec == "dh") {
+        *first = *pdh;
+    } else if (sec == "dl") {
+        *first = *pdl;
     } else if (sec.at(sec.size() - 1) == 'h') {
         if(sec.at(0) == '0' && sec.size() > 2) sec = sec.substr(1, sec.size()-1);
         sec = sec.substr(0, sec.size() - 1);
@@ -1787,63 +1798,20 @@ void firstParaNo_secParaNo_mov(regtype *first, string sec){
         else {
             *first = temp;
         }
-    } else {
-        if (sec == "ax") {
-            if(sizeof(*first) == 1) {
-                cout << "ERROR13" << endl;
-                isError = true;
-                return;
-            }
-            *first = ax;
-        } else if (sec == "bx") {
-            *first = bx;
-        } else if (sec == "cx") {
-            *first = cx;
-        } else if (sec == "dx") {
-            *first = dx;
-        } else if (sec == "di") {
-            *first = di;
-        } else if (sec == "sp") {
-            *first = sp;
-        } else if (sec == "si") {
-            *first = si;
-        } else if (sec == "bp") {
-            *first = bp;
-        } else if (sec == "ah") {
-            if(sizeof(*first) == 2) {
-                cout << "ERROR14" << endl;
-                isError = true;
-                return;
-            }
-            *first = *pah;
-        } else if (sec == "al") {
-            *first = *pal;
-        } else if (sec == "bh") {
-            *first = *pbh;
-        } else if (sec == "bl") {
-            *first = *pbl;
-        } else if (sec == "ch") {
-            *first = *pch;
-        } else if (sec == "cl") {
-            *first = *pcl;
-        } else if (sec == "dh") {
-            *first = *pdh;
-        } else if (sec == "dl") {
-            *first = *pdl;
-        }
-            //SADECE SAYI İSE
-        else {
-            if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
-            if((sizeof(*first) == 1 && stoi(sec) > 255)) {
-                cout << "ERROR15" << endl;
-                isError = true;
-                return;
-            } else {
-                *first = stoi(sec);
-            }
+    }
+        //SADECE SAYI İSE
+    else {
+        if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
+        if((sizeof(*first) == 1 && stoi(sec) > 255)) {
+            cout << "ERROR15" << endl;
+            isError = true;
+            return;
+        } else {
+            *first = stoi(sec);
         }
     }
-}
+    }
+
 
 template <class regtype>
 void firstParaYes_secParaNo(regtype *first,string sec, char desType){
@@ -1867,8 +1835,39 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
         } else {
             memory[*first] = memory[it->second];
         }
-    }
-    else if (sec.at(sec.size() - 1) == 'h') {
+    } else if (sec == "ax") {
+        hexToArray(memory, ax, *first);
+    } else if (sec == "bx") {
+        hexToArray(memory, bx, *first);
+    } else if (sec == "cx") {
+        hexToArray(memory, cx, *first);
+    } else if (sec == "dx") {
+        hexToArray(memory, dx, *first);
+    } else if (sec == "di") {
+        hexToArray(memory, di, *first);
+    } else if (sec == "sp") {
+        hexToArray(memory, sp, *first);
+    } else if (sec == "si") {
+        hexToArray(memory, si, *first);
+    } else if (sec == "bp") {
+        hexToArray(memory, bp, *first);
+    } else if (sec == "ah") {
+        hexToArray(memory, *pah, *first);
+    } else if (sec == "al") {
+        hexToArray(memory, *pal, *first);
+    } else if (sec == "bh") {
+        hexToArray(memory, *pbh, *first);
+    } else if (sec == "bl") {
+        hexToArray(memory, *pbl, *first);
+    } else if (sec == "ch") {
+        hexToArray(memory, *pch, *first);
+    } else if (sec == "cl") {
+        hexToArray(memory, *pcl, *first);
+    } else if (sec == "dh") {
+        hexToArray(memory, *pdh, *first);
+    } else if (sec == "dl") {
+        hexToArray(memory, *pdl, *first);
+    } else if (sec.at(sec.size() - 1) == 'h') {
         if(sec.at(0) == '0' && sec.size() > 2) sec = sec.substr(1, sec.size()-1);
         string num = sec.substr(0, sec.size() - 1);
         if(num.size() == 1 || num.size() == 2) {
@@ -1893,102 +1892,64 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
             return;
         }
         // buraya şu şekilde atılacak -> 12c4h ise ch ı memory[first] , 12 yi memory[first+1]
+    } else {
+        if(sec.at(sec.size()-1) == 'd')
+            sec = sec.substr(0,sec.size() - 1);
+        memory[*first] = stoi(sec);
     }
-    else{
-        if (sec == "ax") {
-            hexToArray(memory, ax, *first);
-        } else if (sec == "bx") {
-            hexToArray(memory, bx, *first);
-        } else if (sec == "cx") {
-            hexToArray(memory, cx, *first);
-        } else if (sec == "dx") {
-            hexToArray(memory, dx, *first);
-        } else if (sec == "di") {
-            hexToArray(memory, di, *first);
-        } else if (sec == "sp") {
-            hexToArray(memory, sp, *first);
-        } else if (sec == "si") {
-            hexToArray(memory, si, *first);
-        } else if (sec == "bp") {
-            hexToArray(memory, bp, *first);
-        } else if (sec == "ah") {
-            hexToArray(memory, *pah, *first);
-        } else if (sec == "al") {
-            hexToArray(memory, *pal, *first);
-        } else if (sec == "bh") {
-            hexToArray(memory, *pbh, *first);
-        } else if (sec == "bl") {
-            hexToArray(memory, *pbl, *first);
-        } else if (sec == "ch") {
-            hexToArray(memory, *pch, *first);
-        } else if (sec == "cl") {
-            hexToArray(memory, *pcl, *first);
-        } else if (sec == "dh") {
-            hexToArray(memory, *pdh, *first);
-        } else if (sec == "dl") {
-            hexToArray(memory, *pdl, *first);
-        }
-        else {
-            if(sec.at(sec.size()-1) == 'd')
-                sec = sec.substr(0,sec.size() - 1);
-            memory[*first] = stoi(sec);
-        }
-    }
-    
 }
 
 template <class regtype>
 void firstParaNo_secParaYes(regtype *first ,string &sec){
-    if (sec.at(sec.size() - 1) == 'h') {
+    if (sec == "ax") {
+        *first = memory[ax]*256 + memory[ax+1];
+    } else if (sec == "bx") {
+        *first = memory[bx]*256 + memory[bx+1];
+    } else if (sec == "cx") {
+        *first = memory[cx]*256 + memory[cx+1];
+    } else if (sec == "dx") {
+        *first = memory[dx]*256 + memory[dx+1];
+    } else if (sec == "di") {
+        *first = memory[di]*256 + memory[di+1];
+    } else if (sec == "sp") {
+        *first = memory[sp]*256 + memory[sp+1];
+    } else if (sec == "si") {
+        *first = memory[si]*256 + memory[si+1];
+    } else if (sec == "bp") {
+        *first = memory[bp]*256 + memory[bp+1];
+    } else if (sec == "ah") {
+        *first = memory[*pah];
+    } else if (sec == "al") {
+        *first = memory[*pal];
+    } else if (sec == "bh") {
+        *first = memory[*pbh];
+    } else if (sec == "bl") {
+        *first = memory[*pbl];
+    } else if (sec == "ch") {
+        *first = memory[*pch];
+    } else if (sec == "cl") {
+        *first = memory[*pcl];
+    } else if (sec == "dh") {
+        *first = memory[*pdh];
+    } else if (sec == "dl") {
+        *first = memory[*pdl];
+    } else if (sec.at(sec.size() - 1) == 'h') {
         sec = sec.substr(0, sec.size() - 1);
         *first = memory[hex2dec(sec)];
-    } else {
-        if (sec == "ax") {
-            *first = memory[ax]*256 + memory[ax+1];
-        } else if (sec == "bx") {
-            *first = memory[bx]*256 + memory[bx+1];
-        } else if (sec == "cx") {
-            *first = memory[cx]*256 + memory[cx+1];
-        } else if (sec == "dx") {
-            *first = memory[dx]*256 + memory[dx+1];
-        } else if (sec == "di") {
-            *first = memory[di]*256 + memory[di+1];
-        } else if (sec == "sp") {
-            *first = memory[sp]*256 + memory[sp+1];
-        } else if (sec == "si") {
-            *first = memory[si]*256 + memory[si+1];
-        } else if (sec == "bp") {
-            *first = memory[bp]*256 + memory[bp+1];
-        } else if (sec == "ah") {
-            *first = memory[*pah];
-        } else if (sec == "al") {
-            *first = memory[*pal];
-        } else if (sec == "bh") {
-            *first = memory[*pbh];
-        } else if (sec == "bl") {
-            *first = memory[*pbl];
-        } else if (sec == "ch") {
-            *first = memory[*pch];
-        } else if (sec == "cl") {
-            *first = memory[*pcl];
-        } else if (sec == "dh") {
-            *first = memory[*pdh];
-        } else if (sec == "dl") {
-            *first = memory[*pdl];
+    }
+    //SADECE SAYI İSE
+    else {
+        if(sec.at(sec.size()-1) == 'd')
+            sec = sec.substr(0,sec.size() - 1);
+        if(stoi(sec) > 65535) {
+            cout << "ERROR20" << endl;
+            isError = true;
+            return;
         }
-            //SADECE SAYI İSE
-        else {
-            if(sec.at(sec.size()-1) == 'd')
-                sec = sec.substr(0,sec.size() - 1);
-            if(stoi(sec) > 65535) {
-                cout << "ERROR20" << endl;
-                isError = true;
-                return;
-            }
-            *first = memory[stoi(sec)];
-        }
+        *first = memory[stoi(sec)];
     }
 }
+
 
 void editStr(string &s) {
     replace(s.begin(), s.end(), ',', ' ');
@@ -2068,7 +2029,7 @@ int hex2dec(string hex) {
     for (int i=0; i<hex.length(); i++) {
         if (hex[i]>=48 && hex[i]<=57){
             result += (hex[i]-48)*pow(16,hex.length()-i-1);
-        } else if (hex[i]>=65 && hex[i]<=102) {
+        } else if (hex[i]>=65 && hex[i]<=70) {
             result += (hex[i]-55)*pow(16,hex.length()-i-1);
         } else if (hex[i]>=97 && hex[i]<=102) {
             result += (hex[i]-87)*pow(16,hex.length()-i-1);
