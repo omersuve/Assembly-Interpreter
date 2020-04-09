@@ -19,10 +19,13 @@ template  <typename regtype1, typename regtype2>  void xor_reg(regtype1 *preg1, 
 template  <typename regtype1, typename regtype2>  void and_reg(regtype1 *preg1, regtype2 *preg2)  ;
 template  <typename regtype1, typename regtype2>  void or_reg(regtype1 *preg1, regtype2 *preg2)  ;
 template  <typename regtype1, typename regtype2>  void cmp_reg(regtype1 *preg1, regtype2 *preg2)  ;
+template  <typename regtype1, typename regtype2>  void add_reg(regtype1 *preg1, regtype2 *preg2)  ;
+template  <typename regtype1, typename regtype2>  void sub_reg(regtype1 *preg1, regtype2 *preg2)  ;
 template <class regtype>  void and_reg_reg(regtype *preg1, regtype *preg2)  ;
 template <class regtype>  void mul_reg(regtype *preg)  ;
 template <class regtype>  void div_reg(regtype *preg)  ;
 int hex2dec(string hex);
+bool areDigit(string s);
 template <class regtype>  void inc_reg(regtype *preg);
 template <class regtype>  void dec_reg(regtype *preg);
 void print_16bitregs() ;
@@ -223,7 +226,7 @@ int main(int argc, char* argv[]) {
         else if(instruction == "jnz"){
             memoryIdx += 6;
         }
-        else if(instruction == "jn"){
+        else if(instruction == "je"){
             memoryIdx += 6;
         }
         else if(instruction == "jne"){
@@ -282,15 +285,89 @@ int main(int argc, char* argv[]) {
         getline(check1, type, ' ');
         getline(check1, info, ' ');
         if(type == "db"){
-            info = info.substr(0, info.size()-1);
-            unsigned char data = hex2dec(info);
+            unsigned char data;
+            int tmp;
+            if(info.at(0) == '\'') {
+                data = info.at(1);
+            }
+            else if(info.at(info.size()-1) == 'h') {
+                info = info.substr(0, info.size()-1);
+                tmp = hex2dec(info);
+                if(tmp > 255) {
+                    cout << "ERROR3: false var" << endl;
+                    isError = true;
+                    return 0;
+                }
+                data = (unsigned char) tmp;
+            }
+            else if(info.at(info.size()-1) == 'd') {
+                info = info.substr(0, info.size()-1);
+                tmp = stoi(info);
+                if(tmp > 255) {
+                    cout << "ERROR3: false var" << endl;
+                    isError = true;
+                    return 0;
+                }
+                data = (unsigned char) tmp;
+            }
+            else if(areDigit(info)) {
+                tmp = stoi(info);
+                if(tmp > 255) {
+                    cout << "ERROR3: false var" << endl;
+                    isError = true;
+                    return 0;
+                }
+                data = (unsigned char) tmp;
+            }
+            else {
+                cout << "ERROR3: false var" << endl;
+                isError = true;
+                return 0;
+            }
             vars.insert(pair<string, int> (var + "1", memoryIdx));
             memory[memoryIdx] = data;
             memoryIdx++;
         }else if(type == "dw"){
-            info = info.substr(0, info.size()-1);
-            unsigned char data1 = hex2dec(info.substr(0,2));
-            unsigned char data2 = hex2dec(info.substr(2,2));
+            unsigned char data1;
+            unsigned char data2;
+            int tmp;
+            if(info.at(info.size()-1) == 'h') {
+                info = info.substr(0, info.size()-1);
+                tmp = hex2dec(info);
+                if(tmp > 65535) {
+                    cout << "ERROR3: false var" << endl;
+                    isError = true;
+                    return 0;
+                }
+                data1 = (unsigned char) (tmp/256);
+                data2 = (unsigned char) (tmp%256);
+            }
+            else if(info.at(info.size()-1) == 'd') {
+                info = info.substr(0, info.size()-1);
+                tmp = stoi(info);
+                if(tmp > 65535) {
+                    cout << "ERROR3: false var" << endl;
+                    isError = true;
+                    return 0;
+                }
+                data1 = (unsigned char) (tmp/256);
+                data2 = (unsigned char) (tmp%256);
+            }
+            else if(areDigit(info)) {
+                tmp = stoi(info);
+                if(tmp > 65535) {
+                    cout << "ERROR3: false var" << endl;
+                    isError = true;
+                    return 0;
+                }
+                data1 = (unsigned char) (tmp/256);
+                data2 = (unsigned char) (tmp%256);
+            }
+            else {
+                cout << "ERROR3: false var" << endl;
+                isError = true;
+                return 0;
+            }
             vars.insert(pair<string, int> (var + "2", memoryIdx));
             memory[memoryIdx+1] = data1;
             memory[memoryIdx] = data2;
@@ -796,36 +873,173 @@ int main(int argc, char* argv[]) {
             }
         }
         else if(instruction == "jnae") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(cf == 1) {
+                i = it->second;
+                continue;
+            }
         }
         else if(instruction == "jnbe") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(cf == 0 && zf == 0) {
+                i = it->second;
+                continue;
+            }
         }
         else if(instruction == "jae") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(cf == 0) {
+                i = it->second;
+                continue;
+            }
         }
         else if(instruction == "jbe") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(cf == 1 && zf == 1) {
+                i = it->second;
+                continue;
+            }
         }
         else if(instruction == "jnb") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(cf == 0) {
+                i = it->second;
+                continue;
+            }
         }
         else if(instruction == "jnc") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(cf == 0) {
+                i = it->second;
+                continue;
+            }
         }
         else if(instruction == "jne") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(zf == 0) {
+                i = it->second;
+                continue;
+            }
         }
         else if(instruction == "jnz") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(zf == 0) {
+                i = it->second;
+                continue;
+            }
         }
         else if(instruction == "ja") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(cf == 0 && zf == 0) {
+                i = it->second;
+                continue;
+            }
         }
         else if(instruction == "jb") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(cf == 1) {
+                i = it->second;
+                continue;
+            }
         }
         else if(instruction == "jc") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(cf == 1) {
+                i = it->second;
+                continue;
+            }
         }
-        else if(instruction == "jn") {
+        else if(instruction == "je") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(zf == 1) {
+                i = it->second;
+                continue;
+            }
         }
         else if(instruction == "jz") {
+            auto it = labels.find(first);
+            if (it == labels.end()) {
+                cout << "ERROR26: no such label" << endl;
+                isError = true;
+                return 0;
+            }
+            if(zf == 1) {
+                i = it->second;
+                continue;
+            }
         }
         else if(codelines[i] == "int 21h") {
             if(*pah == 1) {
-
+                unsigned char tmp;
+                cin >> tmp;
+                *pal = tmp;
             }
-            else if(*pah == 2) cout << (*pdl) ;
+            else if(*pah == 2) cout << (*pdl);
+            else {
+                cout << "ERROR27: undefined operation" << endl;
+                isError = true;
+                return 0;
+            }
         }
     }
     // 1. Read instruction lines
@@ -1165,14 +1379,23 @@ bool check_number(string str) {
     return true;
 }
 */
+template  <typename regtype1, typename regtype2>
+void add_reg(regtype1 *first, regtype2 *sec) {
+    *first += *sec;
+    int tmp = *first + *sec;
+    if(tmp >= pow(256, sizeof(*first))) cf = 1;
+    else cf = 0;
+    if(tmp == pow(256, sizeof(*first))) zf = 1;
+    else zf = 0;
+}
 
 template <class regtype>
 void firstParaNo_secParaNo_add(regtype *first, string sec){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         auto it = vars.find(sec + "1");
-        if (it == vars.end())
-            it = vars.find(sec + "2");
-        *first += memory[it->second];
+        if (it == vars.end()) it = vars.find(sec + "2");
+        unsigned char *pmem = &memory[it->second];
+        add_reg(first, pmem);
     } else if (sec == "ax") {
         *first += ax;
     } else if (sec == "bx") {
@@ -1217,6 +1440,11 @@ void firstParaNo_secParaNo_add(regtype *first, string sec){
         if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
         *first += stoi(sec);
     }
+}
+
+template  <typename regtype1, typename regtype2>
+void sub_reg(regtype1 *preg1, regtype2 *preg2) {
+
 }
 
 template <class regtype>
@@ -1951,11 +2179,16 @@ void firstParaNo_secParaYes(regtype *first ,string &sec){
 
 
 void editStr(string &s) {
+    transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return std::tolower(c); });
     replace(s.begin(), s.end(), ',', ' ');
     string::iterator new_end = unique(s.begin(), s.end(), [=](char lhs, char rhs){return (lhs == rhs) && (lhs == ' '); });
     s.erase(new_end, s.end());
     if(s.at(0) == ' ') s = s.substr(1, s.size()-1);
     if(s.at(s.size()-1) == ' ') s = s.substr(0, s.size()-1);
+    while(s.find(" [") != string::npos) {
+        int index = s.find(" [");
+        if(s.at(index-2) == ' ') s.erase(s.begin() + index);
+    }
     if(s.find("[ ") != string::npos) s.replace(s.find("[ "),2,"[");
     if(s.find(" ]") != string::npos) s.replace(s.find(" ]"),2,"]");
     if(s.find("' ") != string::npos) s.replace(s.find("' "),2,"'");
@@ -1979,11 +2212,11 @@ template <class datatype>
 void hexToArray(unsigned char arr[], datatype x, int index){
     int tmp = x;
     if (sizeof(x) == 1){
-        unsigned char *rep = (unsigned char *)&tmp;
+        auto *rep = (unsigned char *)&tmp;
         arr[index] = rep[0];
     }
     else{
-        unsigned char *rep = (unsigned char *)&tmp;
+        auto *rep = (unsigned char *)&tmp;
         arr[index] = rep[1];
         arr[index+1] = rep[0];
     }
@@ -1991,28 +2224,53 @@ void hexToArray(unsigned char arr[], datatype x, int index){
 
 template <class datatype>
 void multiplication(datatype y){
-    int a = pow(2, 16);
     if (sizeof(y) == 1){
         int tmp = (*pal)*(y);
-        *pal = tmp % a;
-        *pah = tmp / a;
+        *pal = tmp % 256;
+        *pah = tmp / 256;
+        if(*pah == 0) {
+            of = 0;
+            cf = 0;
+        }
+        else {
+            of = 1;
+            cf = 1;
+        }
     }
     else{
         int tmp = ax*y;
-        ax = tmp % a;
-        dx = tmp / a;
+        *pax = tmp % 65536;
+        *pdx = tmp / 65536;
+        if(*pdx == 0) {
+            of = 0;
+            cf = 0;
+        }
+        else {
+            of = 1;
+            cf = 1;
+        }
     }
 }
 
 template <class datatype>
 void division(datatype y){
-    if(sizeof(y) == 2) {
-        cout << "ERROR21" << endl;
-        isError = true;
-        return;
+    if(sizeof(y) == 1) {
+        unsigned short tmp = ax;
+        *pal = tmp / y;
+        *pah = tmp % y;
     }
-    *pal = ax / y;
-    *pah = ax % y;
+    else {
+        int tmp = (*pdx)*65536 + (*pax);
+        if(tmp / y > 65535) {
+            cout << "ERROR27" << endl;
+            isError = true;
+            return;
+        }
+        else {
+            *pax = tmp / y;
+            *pdx = tmp % y;
+        }
+    }
 }
 
 template <class datatype>
@@ -2024,7 +2282,7 @@ void print_hex(datatype x)
         printf("%04x\n",x);
 }
 int hex2dec(string hex) {
-    unsigned char result = 0;
+    int result = 0;
     for (int i=0; i<hex.length(); i++) {
         if (hex[i]>=48 && hex[i]<=57){
             result += (hex[i]-48)*pow(16,hex.length()-i-1);
@@ -2035,6 +2293,13 @@ int hex2dec(string hex) {
         }
     }
     return result;
+}
+bool areDigit(string s) {
+    for (int i=0; i< s.length(); i++) {
+        if (s[i] >= 48 && s[i] <= 57) continue;
+        else return false;
+    }
+    return true;
 }
 /*
 void print_16bitregs()
