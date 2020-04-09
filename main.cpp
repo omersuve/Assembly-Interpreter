@@ -333,13 +333,12 @@ int main(int argc, char* argv[]) {
                             if(it2 == regb.end()) {
                                 if(first.at(first.size()-1) == 'h') {
                                     first = first.substr(0, first.size()-1);
-                                    //todo buraya bak aşağısı hep false
                                     if(hex2dec(first) > 65535) {
                                         cout << "ERROR25" << endl;
                                         isError = true;
                                         return 0;
                                     }
-                                    memory[hex2dec(first)] = ~ memory[hex2dec(first)];
+                                    memory[hex2dec(first)] = it->second;
                                 }
                                 else {
                                     if(first.at(first.size()-1) == 'd') first = first.substr(0, first.size()-1);
@@ -348,17 +347,17 @@ int main(int argc, char* argv[]) {
                                         isError = true;
                                         return 0;
                                     }
-                                    memory[stoi(first)] = ~ memory[stoi(first)];
+                                    memory[stoi(first)] = it->second;
                                 }
                             }
-                            else memory[*it2->second] = memory[it->second];
+                            else memory[*it2->second] = it->second;
                         }
-                        else memory[*it1->second] = memory[it->second];
+                        else memory[*it1->second] = it->second;
                     }else{
                         if(vars.count((first + "1")) || vars.count((first + "2"))) {
                             auto it0 = vars.find(first + "1");
                             if(it0 == vars.end()) it0 = vars.find(first + "2");
-                            memory[it0->second] = memory[it->second];
+                            memory[it0->second] = it->second;
                         }
                         else {
                             auto it1 = regw.find(first);
@@ -369,9 +368,9 @@ int main(int argc, char* argv[]) {
                                     isError = true;
                                     return 0;
                                 }
-                                else *it2->second = memory[it->second];
+                                else *it2->second = it->second;
                             }
-                            else *it1->second = memory[it->second+1]*256 + memory[it->second];
+                            else *it1->second = it->second;
                         }
                     }
                 }else{
@@ -826,7 +825,7 @@ int main(int argc, char* argv[]) {
             if(*pah == 1) {
 
             }
-            else if(*pah == 2) cout << (*pdl) << endl;
+            else if(*pah == 2) cout << (*pdl) ;
         }
     }
     // 1. Read instruction lines
@@ -1207,16 +1206,16 @@ void firstParaNo_secParaNo_add(regtype *first, string sec){
     } else if (sec == "dl") {
         *first += *pdl;
     } else if (sec.at(sec.size() - 1) == 'h') {
-        string s = sec.substr(0, sec.size() - 1);
-        *first += hex2dec(s);
+        sec = sec.substr(0, sec.size() - 1);
+        *first += hex2dec(sec);
     } else if (sec.at(sec.size() - 1) == '\'') {
         unsigned char temp = sec.at(sec.size()-2);
         *first += temp;
     }
            //SADECE SAYI İSE
     else {
-        if(sec.at(sec.size()-1) == 'd') *first = stoi(sec.substr(0,sec.size()-1));
-        else *first = stoi(sec);
+        if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
+        *first += stoi(sec);
     }
 }
 
@@ -1260,16 +1259,16 @@ void firstParaNo_secParaNo_sub(regtype *first, string sec) {
     } else if (sec == "dl") {
         *first -= *pdl;
     } else if (sec.at(sec.size() - 1) == 'h') {
-        string s = sec.substr(0, sec.size() - 1);
-        *first -= hex2dec(s);
+        sec = sec.substr(0, sec.size() - 1);
+        *first -= hex2dec(sec);
     } else if (sec.at(sec.size() - 1) == '\'') {
         unsigned char temp = sec.at(sec.size()-2);
         *first -= temp;
     }
             //SADECE SAYI İSE
     else {
-        if(sec.at(sec.size()-1) == 'd') *first -= stoi(sec.substr(0,sec.size()-1));
-        else *first -= stoi(sec);
+        if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
+        *first -= stoi(sec);
     }
 }
 
@@ -1902,21 +1901,21 @@ void firstParaYes_secParaNo(regtype *first,string sec, char desType){
 template <class regtype>
 void firstParaNo_secParaYes(regtype *first ,string &sec){
     if (sec == "ax") {
-        *first = memory[ax]*256 + memory[ax+1];
+        *first = memory[ax+1]*256 + memory[ax];
     } else if (sec == "bx") {
-        *first = memory[bx]*256 + memory[bx+1];
+        *first = memory[bx+1]*256 + memory[bx];
     } else if (sec == "cx") {
-        *first = memory[cx]*256 + memory[cx+1];
+        *first = memory[cx+1]*256 + memory[cx];
     } else if (sec == "dx") {
-        *first = memory[dx]*256 + memory[dx+1];
+        *first = memory[dx+1]*256 + memory[dx];
     } else if (sec == "di") {
-        *first = memory[di]*256 + memory[di+1];
+        *first = memory[di+1]*256 + memory[di];
     } else if (sec == "sp") {
-        *first = memory[sp]*256 + memory[sp+1];
+        *first = memory[sp+1]*256 + memory[sp];
     } else if (sec == "si") {
-        *first = memory[si]*256 + memory[si+1];
+        *first = memory[si+1]*256 + memory[si];
     } else if (sec == "bp") {
-        *first = memory[bp]*256 + memory[bp+1];
+        *first = memory[bp+1]*256 + memory[bp];
     } else if (sec == "ah") {
         *first = memory[*pah];
     } else if (sec == "al") {
