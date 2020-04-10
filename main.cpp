@@ -600,127 +600,63 @@ int main(int argc, char* argv[]) {
             twoParameters("shr", first, sec);
         } else if (instruction == "push") {
             if(first == "ax"){
-                memory[sp+1] = ax % 256;
-                memory[sp] = ax / 256;
+                memory[sp] = ax;
                 sp -= 2;
             } else if(first == "bx"){
-                memory[sp+1] = bx % 256;
-                memory[sp] = bx / 256;
+                memory[sp] = bx;
                 sp -= 2;
             } else if(first == "cx"){
-                memory[sp+1] = cx % 256;
-                memory[sp] = cx / 256;
+                memory[sp] = cx;
                 sp -= 2;
             } else if(first == "dx"){
-                memory[sp+1] = dx % 256;
-                memory[sp] = dx / 256;
+                memory[sp] = dx;
                 sp -= 2;
             } else if(first == "di"){
-                memory[sp+1] = di % 256;
-                memory[sp] = di / 256;
+                memory[sp] = di;
                 sp -= 2;
             } else if(first == "sp"){
-                memory[sp+1] = sp % 256;
-                memory[sp] = sp / 256;
+                memory[sp] = sp;
                 sp -= 2;
             } else if(first == "si"){
-                memory[sp+1] = si % 256;
-                memory[sp] = si / 256;
+                memory[sp] = si;
                 sp -= 2;
             } else if(first == "bp"){
-                memory[sp+1] = bp % 256;
-                memory[sp] = bp / 256;
+                memory[sp] = bp;
                 sp -= 2;
-            } else if(first == "ah"){
-                memory[sp--] = *pah;
-            } else if(first == "al"){
-                memory[sp--] = *pal;
-            } else if(first == "bh"){
-                memory[sp--] = *pbh;
-            } else if(first == "bl"){
-                memory[sp--] = *pbl;
-            } else if(first == "ch"){
-                memory[sp--] = *pch;
-            } else if(first == "cl"){
-                memory[sp--] = *pcl;
-            } else if(first == "dh"){
-                memory[sp--] = *pdh;
-            } else if(first == "dl"){
-                memory[sp--] = *pdl;
+            } else {
+                cout << "ERROR 93" << endl;
+                isError = true;
+                return 0;
             }
         } else if (instruction == "pop") {
             if(first == "ax"){
-                *pah = memory[sp+1];
-                memory[sp+1] = 0;
-                *pal = memory[sp+2];
-                memory[sp+2] = 0;
                 sp += 2;
+                *pax = memory[sp];
             } else if(first == "bx"){
-                *pbh = memory[sp+1];
-                memory[sp+1] = 0;
-                *pbl = memory[sp+2];
-                memory[sp+2] = 0;
                 sp += 2;
+                *pbx = memory[sp];
             } else if(first == "cx"){
-                *pch = memory[sp+1];
-                memory[sp+1] = 0;
-                *pcl = memory[sp+2];
-                memory[sp+2] = 0;
                 sp += 2;
+                *pcx = memory[sp];
             } else if(first == "dx"){
-                *pdh = memory[sp+1];
-                memory[sp+1] = 0;
-                *pdl = memory[sp+2];
-                memory[sp+2] = 0;
                 sp += 2;
+                *pdx = memory[sp];
             } else if(first == "di"){
-                *pdi = memory[sp+2];
-                memory[sp+2] = 0;
                 sp += 2;
+                *pdi = memory[sp];
             } else if(first == "sp"){
-                *psp = memory[sp+2];
-                memory[sp+2] = 0;
                 sp += 2;
+                *psp = memory[sp];
             } else if(first == "si"){
-                *psi = memory[sp+2];
-                memory[sp+2] = 0;
                 sp += 2;
+                *psi = memory[sp];
             } else if(first == "bp"){
-                *pbp = memory[sp+2];
-                memory[sp+2] = 0;
                 sp += 2;
-            } else if(first == "ah"){
-                *pah = memory[sp+1];
-                memory[sp+1] = 0;
-                sp++;
-            } else if(first == "al"){
-                *pal = memory[sp+1];
-                memory[sp+1] = 0;
-                sp++;
-            } else if(first == "bh"){
-                *pbh = memory[sp+1];
-                memory[sp+1] = 0;
-                sp++;
-            } else if(first == "bl"){
-                *pbl = memory[sp+1];
-                memory[sp+1] = 0;
-                sp++;
-            } else if(first == "ch"){
-                *pch = memory[sp+1];
-                memory[sp+1] = 0;
-                sp++;
-            } else if(first == "cl"){
-                *pcl = memory[sp+1];
-                memory[sp+1] = 0;
-                sp++;
-            } else if(first == "dh"){
-                *pdh = memory[sp+1];
-                memory[sp+1] = 0;
-                sp++;
-            } else if(first == "dl"){
-                *pdl = memory[sp+1];
-                memory[sp+1] = 0;
-                sp++;
+                *pbp = memory[sp];
+            } else {
+                cout << "ERROR 94" << endl;
+                isError = true;
+                return 0;
             }
         } else if (instruction == "nop");
         else if (instruction == "cmp") {
