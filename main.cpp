@@ -8,8 +8,13 @@
 
 using namespace std;
 
+template <class datatype> void mul_reg(datatype y);
+template <class datatype> void div_reg(datatype y);
 int hex2dec(string hex);
 bool areDigit(string s);
+void movFunc(string first, string &sec) ;
+void addFunc(const string& first, const string& sec);
+void subFunc(const string& first, const string& sec);
 void editStr(string &s);
 void twoParameters(string inst, string first, string sec);
 template  <typename regtype1, typename regtype2>  void xor_reg(regtype1 *first, regtype2 *sec)  ;
@@ -19,8 +24,6 @@ template  <typename regtype1, typename regtype2>  void cmp_reg(regtype1 *first, 
 template  <typename regtype1, typename regtype2>  void add_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void sub_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void mov_reg(regtype1 *first, regtype2 *sec)  ;
-template <class datatype> void mul_reg(datatype y);
-template <class datatype> void div_reg(datatype y);
 template <class regtype> void xorFunc(regtype *first, string sec);
 template <class regtype> void andFunc(regtype *first, string sec);
 template <class regtype> void orFunc(regtype *first, string sec);
@@ -608,7 +611,7 @@ int main(int argc, char* argv[]) {
                 isError = true;
                 return 0;
             }
-            if (cf == 1 || zf == 1) {
+            if (cf == 1 && zf == 1) {
                 i = it->second;
                 continue;
             }
@@ -1575,37 +1578,37 @@ void movFunc(regtype *first, string sec){
             }
         }
     } else if (sec == "ax") {
-        mov_reg(first, pax);
+        xor_reg(first, pax);
     } else if (sec == "bx") {
-        mov_reg(first, pbx);
+        xor_reg(first, pbx);
     } else if (sec == "cx") {
-        mov_reg(first, pcx);
+        xor_reg(first, pcx);
     } else if (sec == "dx") {
-        mov_reg(first, pdx);
+        xor_reg(first, pdx);
     } else if (sec == "di") {
-        mov_reg(first, pdi);
+        xor_reg(first, pdi);
     } else if (sec == "sp") {
-        mov_reg(first, psp);
+        xor_reg(first, psp);
     } else if (sec == "si") {
-        mov_reg(first, psi);
+        xor_reg(first, psi);
     } else if (sec == "bp") {
-        mov_reg(first, pbp);
+        xor_reg(first, pbp);
     } else if (sec == "ah") {
-        mov_reg(first, pah);
+        xor_reg(first, pah);
     } else if (sec == "al") {
-        mov_reg(first, pal);
+        xor_reg(first, pal);
     } else if (sec == "bh") {
-        mov_reg(first, pbh);
+        xor_reg(first, pbh);
     } else if (sec == "bl") {
-        mov_reg(first, pbl);
+        xor_reg(first, pbl);
     } else if (sec == "ch") {
-        mov_reg(first, pch);
+        xor_reg(first, pch);
     } else if (sec == "cl") {
-        mov_reg(first, pcl);
+        xor_reg(first, pcl);
     } else if (sec == "dh") {
-        mov_reg(first, pdh);
+        xor_reg(first, pdh);
     } else if (sec == "dl") {
-        mov_reg(first, pdl);
+        xor_reg(first, pdl);
     }
     else if (sec.at(sec.size() - 1) == 'h') {
         sec = sec.substr(0, sec.size() - 1);
@@ -2182,6 +2185,7 @@ void cmpFunc(regtype *first, string sec){
 }
 
 void editStr(string &s) {
+    transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return std::tolower(c); });
     replace(s.begin(), s.end(), ',', ' ');
     replace(s.begin(), s.end(), '"', '\'');
     string::iterator new_end = unique(s.begin(), s.end(), [=](char lhs, char rhs){return (lhs == rhs) && (lhs == ' '); });
@@ -2304,3 +2308,15 @@ bool areDigit(string s) {
     }
     return true;
 }
+/*
+void print_16bitregs()
+{
+    printf("AX:%04x\n",ax);
+    printf("BX:%04x\n",bx);
+    printf("CX:%04x\n",cx);
+    printf("DX:%04x\n",dx);
+    printf("BP:%04x\n",bp);
+    printf("SP:%04x\n",sp);
+    printf("SI:%04x\n",si);
+    printf("DI:%04x\n",di);
+}*/
