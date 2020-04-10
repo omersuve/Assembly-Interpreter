@@ -12,10 +12,10 @@ int hex2dec(string hex);
 bool areDigit(string s);
 void editStr(string &s);
 void twoParameters(string inst, string first, string sec);
-template  <typename regtype1, typename regtype2>  void xor_reg(regtype1 *preg1, regtype2 *preg2)  ;
-template  <typename regtype1, typename regtype2>  void and_reg(regtype1 *preg1, regtype2 *preg2)  ;
-template  <typename regtype1, typename regtype2>  void or_reg(regtype1 *preg1, regtype2 *preg2)  ;
-template  <typename regtype1, typename regtype2>  void cmp_reg(regtype1 *preg1, regtype2 *preg2)  ;
+template  <typename regtype1, typename regtype2>  void xor_reg(regtype1 *first, regtype2 *sec)  ;
+template  <typename regtype1, typename regtype2>  void and_reg(regtype1 *first, regtype2 *sec)  ;
+template  <typename regtype1, typename regtype2>  void or_reg(regtype1 *first, regtype2 *sec)  ;
+template  <typename regtype1, typename regtype2>  void cmp_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void add_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void sub_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void mov_reg(regtype1 *first, regtype2 *sec)  ;
@@ -728,7 +728,8 @@ int main(int argc, char* argv[]) {
 
 void twoParameters(string inst, string first, string sec) {
     if(first.find('[') != string::npos) {
-        first = first.substr(1, first.size()-2);
+        if(first.at(0) != '[') first = first.substr(2, first.size()-3);
+        else first = first.substr(1, first.size()-2);
         auto it1 = regw.find(first);
         auto it2 = regb.find(first);
         if(it1 == regw.end()) {
@@ -789,6 +790,162 @@ void twoParameters(string inst, string first, string sec) {
             else if(inst == "add") addFunc(it1->second, sec);
             else if(inst == "sub") subFunc(it1->second, sec);
             else if(inst == "mov") movFunc(it1->second, sec);
+        }
+    }
+    else if(sec.find('[') != string::npos) {
+        unsigned char type = 0;
+        if (sec.at(0) != '[') {
+            type = sec.at(0);
+            sec = sec.substr(2, sec.size() - 3);
+        } else sec = sec.substr(1, sec.size() - 2);
+        auto it1 = regw.find(first);
+        auto it2 = regb.find(first);
+        if (it1 == regw.end()) {
+            if (it2 == regb.end()) {
+                cout << "ERROR25" << endl;
+                isError = true;
+                return;
+            }
+            if (type == 'w') {
+                cout << "ERROR25" << endl;
+                isError = true;
+                return;
+            }
+            if (sec.at(sec.size() - 1) == 'h') {
+                sec = sec.substr(0, sec.size() - 1);
+                if (hex2dec(sec) > 65535) {
+                    cout << "ERROR25" << endl;
+                    isError = true;
+                    return;
+                }
+                unsigned char *ptmp = &memory[hex2dec(sec)];
+                if (inst == "xor") xor_reg(it2->second, ptmp);
+                else if (inst == "and") and_reg(it2->second, ptmp);
+                else if (inst == "or") or_reg(it2->second, ptmp);
+                else if (inst == "cmp") cmp_reg(it2->second, ptmp);
+                else if (inst == "add") add_reg(it2->second, ptmp);
+                else if (inst == "sub") sub_reg(it2->second, ptmp);
+                else if (inst == "mov") mov_reg(it2->second, ptmp);
+            }
+            else if (sec.at(sec.size() - 1) == 'd' || areDigit(sec)) {
+                if (sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
+                if (stoi(sec) > 65535) {
+                    cout << "ERROR25" << endl;
+                    isError = true;
+                    return;
+                }
+                unsigned char *ptmp = &memory[stoi(sec)];
+                if (inst == "xor") xor_reg(it2->second, ptmp);
+                else if (inst == "and") and_reg(it2->second, ptmp);
+                else if (inst == "or") or_reg(it2->second, ptmp);
+                else if (inst == "cmp") cmp_reg(it2->second, ptmp);
+                else if (inst == "add") add_reg(it2->second, ptmp);
+                else if (inst == "sub") sub_reg(it2->second, ptmp);
+                else if (inst == "mov") mov_reg(it2->second, ptmp);
+            }
+            else {
+                auto it3 = regw.find(sec);
+                auto it4 = regb.find(sec);
+                if (it3 == regw.end()) {
+                    if (it4 == regb.end()) {
+                        cout << "ERROR25" << endl;
+                        isError = true;
+                        return;
+                    }
+                    unsigned char tmp = memory[*it4->second];
+                    unsigned char *ptmp = &tmp;
+                    if (inst == "xor") xor_reg(it2->second, ptmp);
+                    else if (inst == "and") and_reg(it2->second, ptmp);
+                    else if (inst == "or") or_reg(it2->second, ptmp);
+                    else if (inst == "cmp") cmp_reg(it2->second, ptmp);
+                    else if (inst == "add") add_reg(it2->second, ptmp);
+                    else if (inst == "sub") sub_reg(it2->second, ptmp);
+                    else if (inst == "mov") mov_reg(it2->second, ptmp);
+                }
+                else {
+                    unsigned char tmp = memory[*it3->second];
+                    unsigned char *ptmp = &tmp;
+                    if (inst == "xor") xor_reg(it2->second, ptmp);
+                    else if (inst == "and") and_reg(it2->second, ptmp);
+                    else if (inst == "or") or_reg(it2->second, ptmp);
+                    else if (inst == "cmp") cmp_reg(it2->second, ptmp);
+                    else if (inst == "add") add_reg(it2->second, ptmp);
+                    else if (inst == "sub") sub_reg(it2->second, ptmp);
+                    else if (inst == "mov") mov_reg(it2->second, ptmp);
+                }
+            }
+        }
+        else {
+            if (type == 'b') {
+                cout << "ERROR25" << endl;
+                isError = true;
+                return;
+            }
+            if (sec.at(sec.size() - 1) == 'h') {
+                sec = sec.substr(0, sec.size() - 1);
+                if (hex2dec(sec) > 65535) {
+                    cout << "ERROR25" << endl;
+                    isError = true;
+                    return;
+                }
+                unsigned short tmp = memory[hex2dec(sec)+1]*256 + memory[hex2dec(sec)];
+                unsigned short *ptmp = &tmp;
+                if (inst == "xor") xor_reg(it2->second, ptmp);
+                else if (inst == "and") and_reg(it2->second, ptmp);
+                else if (inst == "or") or_reg(it2->second, ptmp);
+                else if (inst == "cmp") cmp_reg(it2->second, ptmp);
+                else if (inst == "add") add_reg(it2->second, ptmp);
+                else if (inst == "sub") sub_reg(it2->second, ptmp);
+                else if (inst == "mov") mov_reg(it2->second, ptmp);
+            }
+            else if (sec.at(sec.size() - 1) == 'd' || areDigit(sec)) {
+                if (sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
+                if (stoi(sec) > 65535) {
+                    cout << "ERROR25" << endl;
+                    isError = true;
+                    return;
+                }
+                unsigned short tmp = memory[stoi(sec)+1]*256 + memory[stoi(sec)];
+                unsigned short *ptmp = &tmp;
+                if (inst == "xor") xor_reg(it2->second, ptmp);
+                else if (inst == "and") and_reg(it2->second, ptmp);
+                else if (inst == "or") or_reg(it2->second, ptmp);
+                else if (inst == "cmp") cmp_reg(it2->second, ptmp);
+                else if (inst == "add") add_reg(it2->second, ptmp);
+                else if (inst == "sub") sub_reg(it2->second, ptmp);
+                else if (inst == "mov") mov_reg(it2->second, ptmp);
+            }
+            else {
+                auto it3 = regw.find(sec);
+                auto it4 = regb.find(sec);
+                if (it3 == regw.end()) {
+                    if (it4 == regb.end()) {
+                        cout << "ERROR25" << endl;
+                        isError = true;
+                        return;
+                    }
+                    unsigned short tmp = memory[(*it4->second)+1]*256 + memory[*it4->second];
+                    unsigned short *ptmp = &tmp;
+                    if (inst == "xor") xor_reg(it2->second, ptmp);
+                    else if (inst == "and") and_reg(it2->second, ptmp);
+                    else if (inst == "or") or_reg(it2->second, ptmp);
+                    else if (inst == "cmp") cmp_reg(it2->second, ptmp);
+                    else if (inst == "add") add_reg(it2->second, ptmp);
+                    else if (inst == "sub") sub_reg(it2->second, ptmp);
+                    else if (inst == "mov") mov_reg(it2->second, ptmp);
+                }
+                else {
+                    unsigned short tmp = memory[(*it3->second)+1]*256 + memory[*it3->second];
+                    unsigned short *ptmp = &tmp;
+                    if (inst == "xor") xor_reg(it2->second, ptmp);
+                    else if (inst == "and") and_reg(it2->second, ptmp);
+                    else if (inst == "or") or_reg(it2->second, ptmp);
+                    else if (inst == "cmp") cmp_reg(it2->second, ptmp);
+                    else if (inst == "add") add_reg(it2->second, ptmp);
+                    else if (inst == "sub") sub_reg(it2->second, ptmp);
+                    else if (inst == "mov") mov_reg(it2->second, ptmp);
+                }
+            }
         }
     }
     else {
@@ -1880,18 +2037,18 @@ void orFunc(regtype *first, string sec){
 }
 
 template  <typename regtype1, typename regtype2>
-void cmp_reg(regtype1 *preg1, regtype2 *preg2) {
+void cmp_reg(regtype1 *first, regtype2 *sec) {
     int result;
-    if(sizeof(*preg1) == 1 && sizeof(*preg2) == 2) {
+    if(sizeof(*first) == 1 && sizeof(*sec) == 2) {
         cout << "ERROR23" << endl;
         isError = true;
         return;
     }
-    else if(sizeof(*preg1) == 2 && sizeof(*preg2) == 1) {
-        auto extended = (unsigned short) *preg2;
-        result = *preg1 - extended;
+    else if(sizeof(*first) == 2 && sizeof(*sec) == 1) {
+        auto extended = (unsigned short) *sec;
+        result = *first - extended;
     }
-    else result = *preg1 - *preg2;
+    else result = *first - *sec;
     if(result > 0) {
         zf = 0;
         cf = 0;
