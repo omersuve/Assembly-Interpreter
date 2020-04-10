@@ -102,27 +102,6 @@ int main(int argc, char* argv[]) {
     regb.insert(pair<string, unsigned char *>("dh", pdh));
     regb.insert(pair<string, unsigned char *>("dl", pdl));
 
-/*
-    *pbx = 289;
-    cf = 0;
-
-    shrFunc(pax, "1");
-
-    const int SHIFT = 15;
-    const unsigned MASK = 1 << SHIFT;
-
-    for ( int i = 1; i <= SHIFT + 1; i++ )
-    {
-        cout << ( *pax & MASK ? '1' : '0' );
-        *pax <<= 1;
-        if ( i % 8 == 0 )
-            cout << ' ';
-    }
-
-    cout << endl;
-    cout << "cf:" << cf << endl;
-*/
-
     vector<string> codelines;
     int memoryIdx = 0;
     ifstream infile(argv[1]);
@@ -138,7 +117,6 @@ int main(int argc, char* argv[]) {
         if (cont) codelines.push_back(lines[i]);
     }
     int i = 0;
-    //todo yanlış instructionları tespit et
     while (codelines[i] != "int 20h") {
         stringstream check(codelines[i]);
         string instruction;
@@ -181,7 +159,7 @@ int main(int argc, char* argv[]) {
                 string tmp = codelines[i].substr(0, codelines[i].size() - 1);
                 labels.insert(pair<string, int>(tmp, i));
             } else {
-                cout << "ERROR2" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -206,7 +184,7 @@ int main(int argc, char* argv[]) {
                 if(info.at(info.size() - 1) == 'h' || info.at(info.size() - 1) == 'd') info = info.substr(0, info.size() - 1);
                 tmp = hex2dec(info);
                 if (tmp > 255) {
-                    cout << "ERROR3: false var" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return 0;
                 }
@@ -215,7 +193,7 @@ int main(int argc, char* argv[]) {
                 info = info.substr(0, info.size() - 1);
                 tmp = stoi(info);
                 if (tmp > 255) {
-                    cout << "ERROR3: false var" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return 0;
                 }
@@ -223,13 +201,13 @@ int main(int argc, char* argv[]) {
             } else if (areDigit(info)) {
                 tmp = stoi(info);
                 if (tmp > 255) {
-                    cout << "ERROR3: false var" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return 0;
                 }
                 data = (unsigned char) tmp;
             } else {
-                cout << "ERROR3: false var" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -244,7 +222,7 @@ int main(int argc, char* argv[]) {
                 if(info.at(info.size() - 1) == 'h' || info.at(info.size() - 1) == 'd') info = info.substr(0, info.size() - 1);
                 tmp = hex2dec(info);
                 if (tmp > 65535) {
-                    cout << "ERROR3: false var" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return 0;
                 }
@@ -254,7 +232,7 @@ int main(int argc, char* argv[]) {
                 info = info.substr(0, info.size() - 1);
                 tmp = stoi(info);
                 if (tmp > 65535) {
-                    cout << "ERROR3: false var" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return 0;
                 }
@@ -263,14 +241,14 @@ int main(int argc, char* argv[]) {
             } else if (areDigit(info)) {
                 tmp = stoi(info);
                 if (tmp > 65535) {
-                    cout << "ERROR3: false var" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return 0;
                 }
                 data1 = (unsigned char) (tmp / 256);
                 data2 = (unsigned char) (tmp % 256);
             } else {
-                cout << "ERROR3: false var" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -279,14 +257,12 @@ int main(int argc, char* argv[]) {
             memory[memoryIdx] = data2;
             memoryIdx += 2;
         } else {
-            cout << "ERROR3" << endl;
+            cout << "Error" << endl;
             isError = true;
             break;
         }
     }
 
-    //todo bazılarında 'a' durumunu incelemedin!!
-    //ASIL KOD BURADAN BAŞLIYOR
     for (int i = 0; i < codelines.size(); i++) {
         if (isError) break;
         stringstream check1(codelines[i]);
@@ -318,7 +294,7 @@ int main(int argc, char* argv[]) {
                                 if (first.at(first.size() - 1) == 'h' || first.at(0) == '0') {
                                     if(first.at(first.size() - 1) == 'h' || first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                                     if (hex2dec(first) > 65535) {
-                                        cout << "ERROR25" << endl;
+                                        cout << "Error" << endl;
                                         isError = true;
                                         return 0;
                                     }
@@ -326,7 +302,7 @@ int main(int argc, char* argv[]) {
                                 } else {
                                     if (first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                                     if (stoi(first) > 65535) {
-                                        cout << "ERROR25" << endl;
+                                        cout << "Error" << endl;
                                         isError = true;
                                         return 0;
                                     }
@@ -344,7 +320,7 @@ int main(int argc, char* argv[]) {
                             auto it2 = regb.find(first);
                             if (it1 == regw.end()) {
                                 if (it2 == regb.end()) {
-                                    cout << "ERROR25" << endl;
+                                    cout << "Error" << endl;
                                     isError = true;
                                     return 0;
                                 } else *it2->second = it->second;
@@ -371,7 +347,7 @@ int main(int argc, char* argv[]) {
                         if (first.at(first.size() - 1) == 'h' || first.at(0) == '0') {
                             if(first.at(first.size() - 1) == 'h' || first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                             if (hex2dec(first) > 65535) {
-                                cout << "ERROR25" << endl;
+                                cout << "Error" << endl;
                                 isError = true;
                                 return 0;
                             }
@@ -379,7 +355,7 @@ int main(int argc, char* argv[]) {
                         } else {
                             if (first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                             if (stoi(first) > 65535) {
-                                cout << "ERROR25" << endl;
+                                cout << "Error" << endl;
                                 isError = true;
                                 return 0;
                             }
@@ -403,7 +379,7 @@ int main(int argc, char* argv[]) {
                         if (first.at(first.size() - 1) == 'h' || first.at(0) == '0') {
                             if(first.at(first.size() - 1) == 'h' || first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                             if (hex2dec(first) > 65535) {
-                                cout << "ERROR25" << endl;
+                                cout << "Error" << endl;
                                 isError = true;
                                 return 0;
                             }
@@ -411,7 +387,7 @@ int main(int argc, char* argv[]) {
                         } else {
                             if (first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                             if (stoi(first) > 65535) {
-                                cout << "ERROR25" << endl;
+                                cout << "Error" << endl;
                                 isError = true;
                                 return 0;
                             }
@@ -466,7 +442,7 @@ int main(int argc, char* argv[]) {
                 if (first.at(first.size() - 1) == 'h' || first.at(0) == '0') {
                     if(first.at(first.size() - 1) == 'h' || first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                     if ((int) hex2dec(first) > 65535) {
-                        cout << "ERROR4" << endl;
+                        cout << "Error" << endl;
                         isError = true;
                         return 0;
                     }
@@ -477,7 +453,7 @@ int main(int argc, char* argv[]) {
                         first = first.substr(0, first.size() - 1);
                     }
                     if (stoi(first) > 65535) {
-                        cout << "ERROR5" << endl;
+                        cout << "Error" << endl;
                         isError = true;
                         return 0;
                     }
@@ -526,7 +502,7 @@ int main(int argc, char* argv[]) {
                 if (first.at(first.size() - 1) == 'h' || first.at(0) == '0') {
                     if(first.at(first.size() - 1) == 'h' || first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                     if ((int) hex2dec(first) > 65535) {
-                        cout << "ERROR6" << endl;
+                        cout << "Error" << endl;
                         isError = true;
                         return 0;
                     }
@@ -537,7 +513,7 @@ int main(int argc, char* argv[]) {
                         first = first.substr(0, first.size() - 1);
                     }
                     if (stoi(first) > 65535) {
-                        cout << "ERROR7" << endl;
+                        cout << "Error" << endl;
                         isError = true;
                         return 0;
                     }
@@ -562,7 +538,7 @@ int main(int argc, char* argv[]) {
                         if (first.at(first.size() - 1) == 'h' || first.at(0) == '0') {
                             if(first.at(first.size() - 1) == 'h' || first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                             if (hex2dec(first) > 65535) {
-                                cout << "ERROR25" << endl;
+                                cout << "Error" << endl;
                                 isError = true;
                                 return 0;
                             }
@@ -570,13 +546,13 @@ int main(int argc, char* argv[]) {
                         } else if (first.at(first.size() - 1) == 'd' || areDigit(first)) {
                             if (first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                             if (stoi(first) > 65535) {
-                                cout << "ERROR25" << endl;
+                                cout << "Error" << endl;
                                 isError = true;
                                 return 0;
                             }
                             memory[stoi(first)] = ~memory[stoi(first)];
                         } else {
-                            cout << "ERROR25" << endl;
+                            cout << "Error" << endl;
                             isError = true;
                             return 0;
                         }
@@ -622,7 +598,7 @@ int main(int argc, char* argv[]) {
                 memory[sp] = bp;
                 sp -= 2;
             } else {
-                cout << "ERROR 93" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -652,7 +628,7 @@ int main(int argc, char* argv[]) {
                 sp += 2;
                 *pbp = memory[sp];
             } else {
-                cout << "ERROR 94" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -662,7 +638,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "jnae") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -673,7 +649,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "jnbe") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -684,7 +660,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "jae") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -695,7 +671,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "jbe") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -706,7 +682,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "jnb") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -717,7 +693,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "jnc") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -728,7 +704,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "jne") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -739,7 +715,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "jnz") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -750,7 +726,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "ja") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -761,7 +737,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "jb") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -772,7 +748,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "jc") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -783,7 +759,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "je") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -794,7 +770,7 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "jz") {
             auto it = labels.find(first);
             if (it == labels.end()) {
-                cout << "ERROR26: no such label" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -807,9 +783,12 @@ int main(int argc, char* argv[]) {
                 unsigned char tmp;
                 cin >> tmp;
                 *pal = tmp;
-            } else if (*pah == 2) cout << (*pdl);
+            } else if (*pah == 2) {
+                cout << (*pdl);
+                *pal = *pdl;
+            }
             else {
-                cout << "ERROR27: undefined operation" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return 0;
             }
@@ -828,7 +807,7 @@ void twoParameters(string inst, string first, string sec) {
                 if (first.at(first.size() - 1) == 'h' || first.at(0) == '0') {
                     if(first.at(first.size() - 1) == 'h' || first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                     if(hex2dec(first) > 65535) {
-                        cout << "ERROR25" << endl;
+                        cout << "Error" << endl;
                         isError = true;
                         return;
                     }
@@ -848,7 +827,7 @@ void twoParameters(string inst, string first, string sec) {
                 else if(first.at(first.size()-1) == 'd' || areDigit(first)) {
                     if(first.at(first.size()-1) == 'd') first = first.substr(0, first.size()-1);
                     if(stoi(first) > 65535) {
-                        cout << "ERROR25" << endl;
+                        cout << "Error" << endl;
                         isError = true;
                         return;
                     }
@@ -866,7 +845,7 @@ void twoParameters(string inst, string first, string sec) {
                     else if(inst == "rcr") rcrFunc(ptmp, sec, false);
                 }
                 else {
-                    cout << "ERROR25" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return;
                 }
@@ -911,19 +890,19 @@ void twoParameters(string inst, string first, string sec) {
         auto it2 = regb.find(first);
         if (it1 == regw.end()) {
             if (it2 == regb.end()) {
-                cout << "ERROR25" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return;
             }
             if (type == 'w') {
-                cout << "ERROR25" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return;
             }
             if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
                 if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
                 if (hex2dec(sec) > 65535) {
-                    cout << "ERROR25" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return;
                 }
@@ -950,7 +929,7 @@ void twoParameters(string inst, string first, string sec) {
             else if (sec.at(sec.size() - 1) == 'd' || areDigit(sec)) {
                 if (sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
                 if (stoi(sec) > 65535) {
-                    cout << "ERROR25" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return;
                 }
@@ -968,7 +947,7 @@ void twoParameters(string inst, string first, string sec) {
                 auto it4 = regb.find(sec);
                 if (it3 == regw.end()) {
                     if (it4 == regb.end()) {
-                        cout << "ERROR25" << endl;
+                        cout << "Error" << endl;
                         isError = true;
                         return;
                     }
@@ -997,14 +976,14 @@ void twoParameters(string inst, string first, string sec) {
         }
         else {
             if (type == 'b') {
-                cout << "ERROR25" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return;
             }
             if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
                 if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
                 if (hex2dec(sec) > 65535) {
-                    cout << "ERROR25" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return;
                 }
@@ -1032,7 +1011,7 @@ void twoParameters(string inst, string first, string sec) {
             else if (sec.at(sec.size() - 1) == 'd' || areDigit(sec)) {
                 if (sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
                 if (stoi(sec) > 65535) {
-                    cout << "ERROR25" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return;
                 }
@@ -1051,7 +1030,7 @@ void twoParameters(string inst, string first, string sec) {
                 auto it4 = regb.find(sec);
                 if (it3 == regw.end()) {
                     if (it4 == regb.end()) {
-                        cout << "ERROR25" << endl;
+                        cout << "Error" << endl;
                         isError = true;
                         return;
                     }
@@ -1096,7 +1075,7 @@ void twoParameters(string inst, string first, string sec) {
                             if(it4->second == pcl) {
                                 //todo
                             }
-                            cout << "ERROR25" << endl;
+                            cout << "Error" << endl;
                             isError = true;
                             return;
                         }
@@ -1104,7 +1083,7 @@ void twoParameters(string inst, string first, string sec) {
                             if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
                                 if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
                                 if(hex2dec(sec) > 65535) {
-                                    cout << "ERROR25" << endl;
+                                    cout << "Error" << endl;
                                     isError = true;
                                     return;
                                 }
@@ -1157,7 +1136,7 @@ void twoParameters(string inst, string first, string sec) {
                                     rcr_reg(pmem2, ptmp2);
                                 }
                                 else {
-                                    cout << "ERROR25" << endl;
+                                    cout << "Error" << endl;
                                     isError = true;
                                     return;
                                 }
@@ -1196,7 +1175,7 @@ void twoParameters(string inst, string first, string sec) {
                                     mov_reg(pmem2, ptmp2);
                                 }
                                 else {
-                                    cout << "ERROR25" << endl;
+                                    cout << "Error" << endl;
                                     isError = true;
                                     return;
                                 }
@@ -1252,13 +1231,13 @@ void twoParameters(string inst, string first, string sec) {
                                     rcr_reg(pmem2, ptmp2);
                                 }
                                 else {
-                                    cout << "ERROR25" << endl;
+                                    cout << "Error" << endl;
                                     isError = true;
                                     return;
                                 }
                             }
                             else {
-                                cout << "ERROR25" << endl;
+                                cout << "Error" << endl;
                                 isError = true;
                                 return;
                             }
@@ -1297,7 +1276,7 @@ void twoParameters(string inst, string first, string sec) {
                                 mov_reg(pmem2, ptmp2);
                             }
                             else {
-                                cout << "ERROR87" << endl;
+                                cout << "Error" << endl;
                                 isError = true;
                                 return;
                             }
@@ -1308,7 +1287,7 @@ void twoParameters(string inst, string first, string sec) {
                         auto it3 = regw.find(sec);
                         auto it4 = regb.find(sec);
                         if(it3 != regw.end()) {
-                            cout << "ERROR25" << endl;
+                            cout << "Error" << endl;
                             isError = true;
                             return;
                         }
@@ -1316,7 +1295,7 @@ void twoParameters(string inst, string first, string sec) {
                             if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
                                 if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
                                 if(hex2dec(sec) > 255) {
-                                    cout << "ERROR25" << endl;
+                                    cout << "Error" << endl;
                                     isError = true;
                                     return;
                                 }
@@ -1362,7 +1341,7 @@ void twoParameters(string inst, string first, string sec) {
                                 else if(inst == "rcr") rcr_reg(pmem, ptmp);
                             }
                             else {
-                                cout << "ERROR25" << endl;
+                                cout << "Error" << endl;
                                 isError = true;
                                 return;
                             }
@@ -1383,13 +1362,13 @@ void twoParameters(string inst, string first, string sec) {
                                 else if(inst == "rcl") rcl_reg(pmem, pcl);
                                 else if(inst == "rcr") rcr_reg(pmem, pcl);
                                 else {
-                                    cout << "ERROR25" << endl;
+                                    cout << "Error" << endl;
                                     isError = true;
                                     return;
                                 }
                             }
                             else {
-                                cout << "ERROR25" << endl;
+                                cout << "Error" << endl;
                                 isError = true;
                                 return;
                             }
@@ -1397,7 +1376,7 @@ void twoParameters(string inst, string first, string sec) {
                     }
                 }
                 else {
-                    cout << "ERROR25" << endl;
+                    cout << "Error" << endl;
                     isError = true;
                     return;
                 }
@@ -1460,7 +1439,7 @@ void rcrFunc(regtype *first, string sec, bool isReg){
         auto *ptmp = &temp;
         rcr_reg(first, ptmp);
     } else{
-        cout << "ERROR52" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -1469,7 +1448,6 @@ void rcrFunc(regtype *first, string sec, bool isReg){
 
 template  <typename regtype1, typename regtype2>
 void rcl_reg(regtype1 *first, regtype2 *sec){
-    //cf yi bitlere yapıştır.
     int count = *sec;
     for(int i = 0; i < count; i++){
         bool oldcf = cf;
@@ -1499,7 +1477,7 @@ void rclFunc(regtype *first, string sec, bool isReg){
         auto *ptmp = &temp;
         rcl_reg(first, ptmp);
     } else{
-        cout << "ERROR62" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -1533,7 +1511,7 @@ void shrFunc(regtype *first, string sec, bool isReg){
         auto *ptmp = &temp;
         shr_reg(first, ptmp);
     } else{
-        cout << "ERROR72" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -1564,7 +1542,7 @@ void shlFunc(regtype *first, string sec, bool isReg){
         auto *ptmp = &temp;
         shl_reg(first, ptmp);
     } else{
-        cout << "ERROR82" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -1587,7 +1565,7 @@ void addFunc(regtype *first, string sec, bool isReg){
         if (it == vars.end()) {
             it = vars.find(sec + "2");
             if(sizeof(*first) == 1) {
-                cout << "ERROR32" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return;
             } else {
@@ -1642,7 +1620,7 @@ void addFunc(regtype *first, string sec, bool isReg){
         if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
         int tmp = hex2dec(sec);
         if(sizeof(*first) == 1 && isReg && tmp > 255) {
-            cout << "ERROR32" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }else {
@@ -1673,7 +1651,7 @@ void addFunc(regtype *first, string sec, bool isReg){
     else if(sec.at(sec.size()-1) == 'd'|| areDigit(sec)) {
         if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
         if(sizeof(*first) == 1 && isReg && isReg && stoi(sec) > 255) {
-            cout << "ERROR32" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }
@@ -1691,7 +1669,7 @@ void addFunc(regtype *first, string sec, bool isReg){
         }
     }
     else {
-        cout << "ERROR32" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -1713,7 +1691,7 @@ void subFunc(regtype *first, string sec, bool isReg){
         if (it == vars.end()) {
             it = vars.find(sec + "2");
             if(sizeof(*first) == 1) {
-                cout << "ERROR32" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return;
             } else {
@@ -1768,7 +1746,7 @@ void subFunc(regtype *first, string sec, bool isReg){
         if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
         int tmp = hex2dec(sec);
         if(sizeof(*first) == 1 && isReg && tmp > 255) {
-            cout << "ERROR32" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }else {
@@ -1799,7 +1777,7 @@ void subFunc(regtype *first, string sec, bool isReg){
     else if(sec.at(sec.size()-1) == 'd'|| areDigit(sec)) {
         if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
         if(sizeof(*first) == 1 && isReg && stoi(sec) > 255) {
-            cout << "ERROR32" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }
@@ -1817,7 +1795,7 @@ void subFunc(regtype *first, string sec, bool isReg){
         }
     }
     else {
-        cout << "ERROR32" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -1835,7 +1813,7 @@ void movFunc(regtype *first, string sec, bool isReg){
         if (it == vars.end()) {
             it = vars.find(sec + "2");
             if(sizeof(*first) == 1) {
-                cout << "ERROR22" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return;
             } else {
@@ -1885,7 +1863,7 @@ void movFunc(regtype *first, string sec, bool isReg){
         if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
         int tmp = hex2dec(sec);
         if(sizeof(*first) == 1 && isReg && tmp > 255) {
-            cout << "ERROR22" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }else {
@@ -1911,7 +1889,7 @@ void movFunc(regtype *first, string sec, bool isReg){
         if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
         int tmp = stoi(sec);
         if(sizeof(*first) == 1 && isReg && stoi(sec) > 255) {
-            cout << "ERROR22" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }
@@ -1930,7 +1908,7 @@ void movFunc(regtype *first, string sec, bool isReg){
         }
     }
     else {
-        cout << "ERROR22" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -1939,7 +1917,7 @@ void movFunc(regtype *first, string sec, bool isReg){
 template  <typename regtype1, typename regtype2>
 void xor_reg(regtype1 *first, regtype2 *sec) {
     if(sizeof(*first) != sizeof(*sec)) {
-        cout << "ERROR23" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -1951,13 +1929,12 @@ void xor_reg(regtype1 *first, regtype2 *sec) {
 
 template <class regtype>
 void xorFunc(regtype *first, string sec, bool isReg){
-    //todo [sec] durumunu kontrol et
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         auto it = vars.find(sec + "1");
         if (it == vars.end()) {
             it = vars.find(sec + "2");
             if(sizeof(*first) == 1) {
-                cout << "ERROR32" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return;
             } else {
@@ -2012,7 +1989,7 @@ void xorFunc(regtype *first, string sec, bool isReg){
         if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
         int tmp = hex2dec(sec);
         if(sizeof(*first) == 1 && isReg && tmp > 255) {
-            cout << "ERROR32" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }else {
@@ -2043,7 +2020,7 @@ void xorFunc(regtype *first, string sec, bool isReg){
     else if(sec.at(sec.size()-1) == 'd'|| areDigit(sec)) {
         if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
         if(sizeof(*first) == 1 && isReg && stoi(sec) > 255) {
-            cout << "ERROR32" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }
@@ -2061,7 +2038,7 @@ void xorFunc(regtype *first, string sec, bool isReg){
         }
     }
     else {
-        cout << "ERROR32" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -2070,7 +2047,7 @@ void xorFunc(regtype *first, string sec, bool isReg){
 template  <typename regtype1, typename regtype2>
 void and_reg(regtype1 *first, regtype2 *sec) {
     if(sizeof(*first) != sizeof(*sec)) {
-        cout << "ERROR23" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -2082,13 +2059,12 @@ void and_reg(regtype1 *first, regtype2 *sec) {
 
 template <class regtype>
 void andFunc(regtype *first, string sec, bool isReg){
-    //todo [sec] durumunu kontrol et
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         auto it = vars.find(sec + "1");
         if (it == vars.end()) {
             it = vars.find(sec + "2");
             if(sizeof(*first) == 1) {
-                cout << "ERROR32" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return;
             } else {
@@ -2143,7 +2119,7 @@ void andFunc(regtype *first, string sec, bool isReg){
         if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
         int tmp = hex2dec(sec);
         if(sizeof(*first) == 1 && isReg && tmp > 255) {
-            cout << "ERROR32" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }else {
@@ -2174,7 +2150,7 @@ void andFunc(regtype *first, string sec, bool isReg){
     else if(sec.at(sec.size()-1) == 'd'|| areDigit(sec)) {
         if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
         if(sizeof(*first) == 1 && isReg && stoi(sec) > 255) {
-            cout << "ERROR32" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }
@@ -2192,7 +2168,7 @@ void andFunc(regtype *first, string sec, bool isReg){
         }
     }
     else {
-        cout << "ERROR32" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -2201,7 +2177,7 @@ void andFunc(regtype *first, string sec, bool isReg){
 template  <typename regtype1, typename regtype2>
 void or_reg(regtype1 *first, regtype2 *sec) {
     if(sizeof(*first) != sizeof(*sec)) {
-        cout << "ERROR23" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -2213,13 +2189,12 @@ void or_reg(regtype1 *first, regtype2 *sec) {
 
 template <class regtype>
 void orFunc(regtype *first, string sec, bool isReg){
-    //todo [sec] durumunu kontrol et
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
         auto it = vars.find(sec + "1");
         if (it == vars.end()) {
             it = vars.find(sec + "2");
             if(sizeof(*first) == 1) {
-                cout << "ERROR32" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return;
             } else {
@@ -2274,7 +2249,7 @@ void orFunc(regtype *first, string sec, bool isReg){
         if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
         int tmp = hex2dec(sec);
         if(sizeof(*first) == 1 && isReg && tmp > 255) {
-            cout << "ERROR32" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }else {
@@ -2305,7 +2280,7 @@ void orFunc(regtype *first, string sec, bool isReg){
     else if(sec.at(sec.size()-1) == 'd'|| areDigit(sec)) {
         if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
         if(sizeof(*first) == 1 && isReg && stoi(sec) > 255) {
-            cout << "ERROR32" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }
@@ -2323,7 +2298,7 @@ void orFunc(regtype *first, string sec, bool isReg){
         }
     }
     else {
-        cout << "ERROR32" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -2333,7 +2308,7 @@ template  <typename regtype1, typename regtype2>
 void cmp_reg(regtype1 *first, regtype2 *sec) {
     int result;
     if(sizeof(*first) == 1 && sizeof(*sec) == 2) {
-        cout << "ERROR23" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -2363,7 +2338,7 @@ void cmpFunc(regtype *first, string sec, bool isReg){
         if (it == vars.end()) {
             it = vars.find(sec + "2");
             if(sizeof(*first) == 1) {
-                cout << "ERROR42" << endl;
+                cout << "Error" << endl;
                 isError = true;
                 return;
             } else {
@@ -2418,7 +2393,7 @@ void cmpFunc(regtype *first, string sec, bool isReg){
     } else if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
         if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
         if(sizeof(*first) == 1 && isReg && sec.size() > 2) {
-            cout << "ERROR42" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }else {
@@ -2449,7 +2424,7 @@ void cmpFunc(regtype *first, string sec, bool isReg){
     else if(sec.at(sec.size()-1) == 'd'|| areDigit(sec)) {
         if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
         if(sizeof(*first) == 1 && isReg && stoi(sec) > 255) {
-            cout << "ERROR42" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }
@@ -2467,7 +2442,7 @@ void cmpFunc(regtype *first, string sec, bool isReg){
         }
     }
     else {
-        cout << "ERROR42" << endl;
+        cout << "Error" << endl;
         isError = true;
         return;
     }
@@ -2557,7 +2532,7 @@ void div_reg(datatype y){
     else {
         int tmp = (*pdx)*65536 + (*pax);
         if(tmp / y > 65535) {
-            cout << "ERROR27" << endl;
+            cout << "Error" << endl;
             isError = true;
             return;
         }
