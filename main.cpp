@@ -296,6 +296,7 @@ int main(int argc, char* argv[]) {
         getline(check1, instruction, ' ');
         getline(check1, first, ' ');
         getline(check1, sec, ' ');
+        if(sec == "''") sec = "' '";
         if (instruction == "mov") {
             bool isOffset = false;
             if (sec == "offset") {
@@ -871,31 +872,33 @@ void twoParameters(string inst, string first, string sec) {
                 }
             }
             else {
-                if(inst == "xor") xorFunc(it2->second, sec, true);
-                else if(inst == "and") andFunc(it2->second, sec, true);
-                else if(inst == "or") orFunc(it2->second, sec, true);
-                else if(inst == "cmp") cmpFunc(it2->second, sec, true);
-                else if(inst == "add") addFunc(it2->second, sec, true);
-                else if(inst == "sub") subFunc(it2->second, sec, true);
-                else if(inst == "mov") movFunc(it2->second, sec, true);
-                else if(inst == "shl") shlFunc(it2->second, sec, true);
-                else if(inst == "shr") shrFunc(it2->second, sec, true);
-                else if(inst == "rcl") rclFunc(it2->second, sec, true);
-                else if(inst == "rcr") rcrFunc(it2->second, sec, true);
+                unsigned char *ptmp = &memory[*it2->second];
+                if(inst == "xor") xorFunc(ptmp, sec, true);
+                else if(inst == "and") andFunc(ptmp, sec, true);
+                else if(inst == "or") orFunc(ptmp, sec, true);
+                else if(inst == "cmp") cmpFunc(ptmp, sec, true);
+                else if(inst == "add") addFunc(ptmp, sec, true);
+                else if(inst == "sub") subFunc(ptmp, sec, true);
+                else if(inst == "mov") movFunc(ptmp, sec, true);
+                else if(inst == "shl") shlFunc(ptmp, sec, true);
+                else if(inst == "shr") shrFunc(ptmp, sec, true);
+                else if(inst == "rcl") rclFunc(ptmp, sec, true);
+                else if(inst == "rcr") rcrFunc(ptmp, sec, true);
             }
         }
         else {
-            if(inst == "xor") xorFunc(it1->second, sec, true);
-            else if(inst == "and") andFunc(it1->second, sec, true);
-            else if(inst == "or") orFunc(it1->second, sec, true);
-            else if(inst == "cmp") cmpFunc(it1->second, sec, true);
-            else if(inst == "add") addFunc(it1->second, sec, true);
-            else if(inst == "sub") subFunc(it1->second, sec, true);
-            else if(inst == "mov") movFunc(it1->second, sec, true);
-            else if(inst == "shl") shlFunc(it1->second, sec, true);
-            else if(inst == "shr") shrFunc(it1->second, sec, true);
-            else if(inst == "rcl") rclFunc(it1->second, sec, true);
-            else if(inst == "rcr") rcrFunc(it1->second, sec, true);
+            unsigned char *ptmp = &memory[*it1->second];
+            if(inst == "xor") xorFunc(ptmp, sec, true);
+            else if(inst == "and") andFunc(ptmp, sec, true);
+            else if(inst == "or") orFunc(ptmp, sec, true);
+            else if(inst == "cmp") cmpFunc(ptmp, sec, true);
+            else if(inst == "add") addFunc(ptmp, sec, true);
+            else if(inst == "sub") subFunc(ptmp, sec, true);
+            else if(inst == "mov") movFunc(ptmp, sec, true);
+            else if(inst == "shl") shlFunc(ptmp, sec, true);
+            else if(inst == "shr") shrFunc(ptmp, sec, true);
+            else if(inst == "rcl") rclFunc(ptmp, sec, true);
+            else if(inst == "rcr") rcrFunc(ptmp, sec, true);
         }
     }
     else if(sec.find('[') != string::npos) {
@@ -1886,8 +1889,17 @@ void movFunc(regtype *first, string sec, bool isReg){
             isError = true;
             return;
         }else {
-            if(sizeof(*first) == 1) *first = (unsigned char) hex2dec(sec);
-            else *first = (unsigned short) hex2dec(sec);
+            if(sizeof(*first) == 1) {
+                if(isReg) *first = tmp;
+                else {
+                    if(tmp > 255) {
+                        *first = tmp % 256;
+                        *(first+1) = tmp / 256;
+                    }
+                    else *first = tmp;
+                }
+            }
+            else *first = (unsigned short) tmp;
         }
     }
     else if (sec.at(sec.size() - 1) == '\'') {
@@ -1897,14 +1909,24 @@ void movFunc(regtype *first, string sec, bool isReg){
     }
     else if(sec.at(sec.size()-1) == 'd'|| areDigit(sec)) {
         if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
+        int tmp = stoi(sec);
         if(sizeof(*first) == 1 && isReg && stoi(sec) > 255) {
             cout << "ERROR22" << endl;
             isError = true;
             return;
         }
         else {
-            if(sizeof(*first) == 1) *first = (unsigned char) stoi(sec);
-            else *first = (unsigned short) stoi(sec);
+            if(sizeof(*first) == 1) {
+                if(isReg) *first = tmp;
+                else {
+                    if(tmp > 255) {
+                        *first = tmp % 256;
+                        *(first+1) = tmp / 256;
+                    }
+                    else *first = tmp;
+                }
+            }
+            else *first = (unsigned short) tmp;
         }
     }
     else {
