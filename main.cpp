@@ -12,6 +12,7 @@ int hex2dec(string hex);
 bool areDigit(string s);
 void editStr(string &s);
 void twoParameters(string inst, string first, string sec);
+void addressing(map<string, unsigned short *> &map1, map<string, unsigned char *> &map2);
 template  <typename regtype1, typename regtype2>  void xor_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void shl_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void shr_reg(regtype1 *first, regtype2 *sec)  ;
@@ -70,7 +71,7 @@ unsigned short *psp = &sp ;
 unsigned short *psi = &si ;
 unsigned short *pbp = &bp ;
 
-// note that x86 uses little endian, that is, least significat byte is stored in lowest byte
+// note that x86 uses little endian, that is, least significant byte is stored in lowest byte
 unsigned char *pah = (unsigned char *) ( ( (unsigned char *) &ax) + 1) ;
 unsigned char *pal = (unsigned char *) &ax  ;
 unsigned char *pbh = (unsigned char *) ( ( (unsigned char *) &bx) + 1) ;
@@ -80,33 +81,23 @@ unsigned char *pcl = (unsigned char *) &cx  ;
 unsigned char *pdh = (unsigned char *) ( ( (unsigned char *) &dx) + 1) ;
 unsigned char *pdl = (unsigned char *) &dx  ;
 
+// the maps include registers that point an adress
 map <string, unsigned short*> regw;
 map <string, unsigned char*> regb;
 
 int main(int argc, char* argv[]) {
 
-    regw.insert(pair<string, unsigned short *>("ax", pax));
-    regw.insert(pair<string, unsigned short *>("bx", pbx));
-    regw.insert(pair<string, unsigned short *>("cx", pcx));
-    regw.insert(pair<string, unsigned short *>("dx", pdx));
-    regw.insert(pair<string, unsigned short *>("di", pdi));
-    regw.insert(pair<string, unsigned short *>("sp", psp));
-    regw.insert(pair<string, unsigned short *>("si", psi));
-    regw.insert(pair<string, unsigned short *>("bp", pbp));
-    regb.insert(pair<string, unsigned char *>("ah", pah));
-    regb.insert(pair<string, unsigned char *>("al", pal));
-    regb.insert(pair<string, unsigned char *>("bh", pbh));
-    regb.insert(pair<string, unsigned char *>("bl", pbl));
-    regb.insert(pair<string, unsigned char *>("ch", pch));
-    regb.insert(pair<string, unsigned char *>("cl", pcl));
-    regb.insert(pair<string, unsigned char *>("dh", pdh));
-    regb.insert(pair<string, unsigned char *>("dl", pdl));
+    addressing(regw, regb);
 
     vector<string> codelines;
     int memoryIdx = 0;
+
+    //Reading Inputs from the file
     ifstream infile(argv[1]);
     string line;
     while (getline(infile, line)) lines.push_back(line);
+
+    //Eliminating the lines not between "code segment" and "code ends"
     bool cont = false;
     for (int i = 0; i < lines.size(); i++) {
         editStr(lines[i]);
@@ -116,6 +107,8 @@ int main(int argc, char* argv[]) {
         } else if (lines[i] == "code ends") cont = false;
         if (cont) codelines.push_back(lines[i]);
     }
+
+    //Determining where the variables should be located by adding 6 bytes for each instruction.
     int i = 0;
     while (codelines[i] != "int 20h") {
         stringstream check(codelines[i]);
@@ -167,7 +160,8 @@ int main(int argc, char* argv[]) {
         i++;
     }
     memoryIdx += 6;
-    //VARİABLE OKUMA
+
+    //Reading variables that are exist after the instruction "int20h"
     for (int j = i + 1; j < codelines.size(); j++) {
         string var;
         string type;
@@ -263,6 +257,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
+    //The main loop of the program that processes each meaningful line
     for (int i = 0; i < codelines.size(); i++) {
         if (isError) break;
         stringstream check1(codelines[i]);
@@ -338,7 +333,7 @@ int main(int argc, char* argv[]) {
                         }
                     }
                 } else {
-                    cout << "Key-value pair not present in map" << endl;
+                    cout << "Error" << endl;
                 }
             } else {
                 twoParameters("mov", first, sec);
@@ -625,16 +620,20 @@ int main(int argc, char* argv[]) {
             twoParameters("shr", first, sec);
         } else if (instruction == "push") {
             if(first == "ax"){
-                memory[sp] = ax;
+                memory[sp] = *pal;
+                memory[sp+1] = *pah;
                 sp -= 2;
             } else if(first == "bx"){
-                memory[sp] = bx;
+                memory[sp] = *pbl;
+                memory[sp+1] = *pbh;
                 sp -= 2;
             } else if(first == "cx"){
-                memory[sp] = cx;
+                memory[sp] = *pcl;
+                memory[sp+1] = *pch;
                 sp -= 2;
             } else if(first == "dx"){
-                memory[sp] = dx;
+                memory[sp] = *pdl;
+                memory[sp+1] = *pdh;
                 sp -= 2;
             } else if(first == "di"){
                 memory[sp] = di;
@@ -656,16 +655,20 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "pop") {
             if(first == "ax"){
                 sp += 2;
-                *pax = memory[sp];
+                *pal = memory[sp];
+                *pah = memory[sp+1];
             } else if(first == "bx"){
                 sp += 2;
-                *pbx = memory[sp];
+                *pbl = memory[sp];
+                *pbh = memory[sp+1];
             } else if(first == "cx"){
                 sp += 2;
-                *pcx = memory[sp];
+                *pcl = memory[sp];
+                *pch = memory[sp+1];
             } else if(first == "dx"){
                 sp += 2;
-                *pdx = memory[sp];
+                *pdl = memory[sp];
+                *pdh = memory[sp+1];
             } else if(first == "di"){
                 sp += 2;
                 *pdi = memory[sp];
@@ -847,6 +850,7 @@ int main(int argc, char* argv[]) {
     }
 }
 
+//Handling all instructions having two parameters
 void twoParameters(string inst, string first, string sec) {
     if(first.find('[') != string::npos) {
         if(first.at(0) != '[') first = first.substr(2, first.size()-3);
@@ -1462,6 +1466,7 @@ void twoParameters(string inst, string first, string sec) {
     }
 }
 
+//Processing the right rotation operation
 template  <typename regtype1, typename regtype2>
 void rcr_reg(regtype1 *first, regtype2 *sec){
     int count = *sec;
@@ -1470,6 +1475,7 @@ void rcr_reg(regtype1 *first, regtype2 *sec){
     *first = (*first >> 1|(*first << (sizeof(*first)*8 - 1)));
 }
 
+//Handling the right rotation instruction by using "rcr_reg" function
 template  <typename regtype>
 void rcrFunc(regtype *first, string sec, bool isReg){
     if(sec == "cl"){
@@ -1496,7 +1502,7 @@ void rcrFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-
+//Processing the left rotation operation
 template  <typename regtype1, typename regtype2>
 void rcl_reg(regtype1 *first, regtype2 *sec){
     int count = *sec;
@@ -1508,6 +1514,7 @@ void rcl_reg(regtype1 *first, regtype2 *sec){
     }
 }
 
+//Handling the left rotation instruction by using "rcl_reg" function
 template  <typename regtype>
 void rclFunc(regtype *first, string sec, bool isReg){
     if(sec == "cl"){
@@ -1534,6 +1541,7 @@ void rclFunc(regtype *first, string sec, bool isReg){
     }
 }
 
+//Processing the right shifting operation
 template  <typename regtype1, typename regtype2>
 void shr_reg(regtype1 *first, regtype2 *sec){
     int count = *sec;
@@ -1542,6 +1550,7 @@ void shr_reg(regtype1 *first, regtype2 *sec){
     *first = *first >> 1;
 }
 
+//Handling the right shifting instruction by using "shr_reg" function
 template  <typename regtype>
 void shrFunc(regtype *first, string sec, bool isReg){
     if(sec == "cl"){
@@ -1568,15 +1577,16 @@ void shrFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-
+//Processing the left shifting operation
 template  <typename regtype1, typename regtype2>
 void shl_reg(regtype1 *first, regtype2 *sec){
     int count = *sec;
     *first = *first << (count-1);
-    cf = (*first & (1 << (sizeof(*first)*4 - 1))) != 0;
+    cf = (*first & (1 << (sizeof(*first)*8 - 1))) != 0;
     *first = *first << 1;
 }
 
+//Handling the left shifting instruction by using "shl_reg" function
 template  <typename regtype>
 void shlFunc(regtype *first, string sec, bool isReg){
     if(sec == "cl"){
@@ -1599,6 +1609,7 @@ void shlFunc(regtype *first, string sec, bool isReg){
     }
 }
 
+//Processing the addition operation
 template  <typename regtype1, typename regtype2>
 void add_reg(regtype1 *first, regtype2 *sec) {
     int tmp = *first + *sec;
@@ -1609,6 +1620,7 @@ void add_reg(regtype1 *first, regtype2 *sec) {
     else zf = 0;
 }
 
+//Handling the addition instruction by using "add_reg" function
 template <class regtype>
 void addFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -1726,6 +1738,7 @@ void addFunc(regtype *first, string sec, bool isReg){
     }
 }
 
+//Processing the addition operation
 template  <typename regtype1, typename regtype2>
 void sub_reg(regtype1 *first, regtype2 *sec) {
     if(*sec > *first) cf = 1;
@@ -1735,6 +1748,7 @@ void sub_reg(regtype1 *first, regtype2 *sec) {
     else zf = 0;
 }
 
+//Handling the subtraction instruction by using "sub_reg" function
 template <class regtype>
 void subFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -1852,11 +1866,13 @@ void subFunc(regtype *first, string sec, bool isReg){
     }
 }
 
+//Processing the moving operation
 template  <typename regtype1, typename regtype2>
 void mov_reg(regtype1 *first, regtype2 *sec) {
     *first = *sec;
 }
 
+//Handling the moving instruction by using "mov_reg" function
 template <class regtype>
 void movFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -1965,6 +1981,7 @@ void movFunc(regtype *first, string sec, bool isReg){
     }
 }
 
+//Processing the xor operation
 template  <typename regtype1, typename regtype2>
 void xor_reg(regtype1 *first, regtype2 *sec) {
     if(sizeof(*first) != sizeof(*sec)) {
@@ -1978,6 +1995,7 @@ void xor_reg(regtype1 *first, regtype2 *sec) {
     else zf = 0;
 }
 
+//Handling the xor instruction by using "xor_reg" function
 template <class regtype>
 void xorFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -2095,6 +2113,7 @@ void xorFunc(regtype *first, string sec, bool isReg){
     }
 }
 
+//Processing the and operation
 template  <typename regtype1, typename regtype2>
 void and_reg(regtype1 *first, regtype2 *sec) {
     if(sizeof(*first) != sizeof(*sec)) {
@@ -2108,6 +2127,7 @@ void and_reg(regtype1 *first, regtype2 *sec) {
     else zf = 0;
 }
 
+//Handling the and instruction by using "and_reg" function
 template <class regtype>
 void andFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -2225,6 +2245,7 @@ void andFunc(regtype *first, string sec, bool isReg){
     }
 }
 
+//Processing the or operation
 template  <typename regtype1, typename regtype2>
 void or_reg(regtype1 *first, regtype2 *sec) {
     if(sizeof(*first) != sizeof(*sec)) {
@@ -2238,6 +2259,7 @@ void or_reg(regtype1 *first, regtype2 *sec) {
     else zf = 0;
 }
 
+//Handling the or instruction by using "or_reg" function
 template <class regtype>
 void orFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -2355,6 +2377,7 @@ void orFunc(regtype *first, string sec, bool isReg){
     }
 }
 
+//Processing the compare operation
 template  <typename regtype1, typename regtype2>
 void cmp_reg(regtype1 *first, regtype2 *sec) {
     int result;
@@ -2382,6 +2405,7 @@ void cmp_reg(regtype1 *first, regtype2 *sec) {
     }
 }
 
+//Handling the compare instruction by using "cmp_reg" function
 template <class regtype>
 void cmpFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -2499,31 +2523,7 @@ void cmpFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-void editStr(string &s) {
-    replace(s.begin(), s.end(), ',', ' ');
-    replace(s.begin(), s.end(), '"', '\'');
-    string::iterator new_end = unique(s.begin(), s.end(), [=](char lhs, char rhs){return (lhs == rhs) && (lhs == ' '); });
-    s.erase(new_end, s.end());
-    if(s.at(0) == ' ') s = s.substr(1, s.size()-1);
-    if(s.at(s.size()-1) == ' ') s = s.substr(0, s.size()-1);
-    if(s.find(" [") != string::npos) {
-        int index = s.find(" [");
-        if(s.at(index-2) == ' ') s.erase(s.begin() + index);
-    }
-    if(s.find("[ ") != string::npos) s.replace(s.find("[ "),2,"[");
-    if(s.find(" ]") != string::npos) s.replace(s.find(" ]"),2,"]");
-    if(s.find("' ") != string::npos) s.replace(s.find("' "),2,"'");
-    s = s + ' ';
-    if(s.find(" ' ") != string::npos) s.replace(s.find(" ' "),3,"'");
-    if(s.at(s.size()-1) == ' ') s = s.substr(0, s.size()-1);
-
-    int index = s.find('\'') + 1;
-    for(int i = 0; i < s.length(); i++){
-        unsigned char c = s.at(i);
-        if(index != i || i == 0) s.at(i) = tolower(c);
-    }
-}
-
+//Processing the multiplication operation
 template <class datatype>
 void mul_reg(datatype y){
     if (sizeof(y) == 1){
@@ -2554,6 +2554,7 @@ void mul_reg(datatype y){
     }
 }
 
+//Processing the division operation
 template <class datatype>
 void div_reg(datatype y){
     if(sizeof(y) == 1) {
@@ -2575,6 +2576,7 @@ void div_reg(datatype y){
     }
 }
 
+//Having a string parameter that consist of a hexadecimal number in order to change it to a decimal number
 int hex2dec(string hex) {
     int result = 0;
     for (int i=0; i<hex.length(); i++) {
@@ -2588,10 +2590,58 @@ int hex2dec(string hex) {
     }
     return result;
 }
+
+//Checking whether the string consists of digits or not
 bool areDigit(string s) {
     for (int i=0; i< s.length(); i++) {
         if (s[i] >= 48 && s[i] <= 57) continue;
         else return false;
     }
     return true;
+}
+
+//Inserting address for each register in order to access the registers easily
+void addressing(map<string, unsigned short *> &map1, map<string, unsigned char *> &map2) {
+    map1.insert(pair<string, unsigned short *>("ax", pax));
+    map1.insert(pair<string, unsigned short *>("bx", pbx));
+    map1.insert(pair<string, unsigned short *>("cx", pcx));
+    map1.insert(pair<string, unsigned short *>("dx", pdx));
+    map1.insert(pair<string, unsigned short *>("di", pdi));
+    map1.insert(pair<string, unsigned short *>("sp", psp));
+    map1.insert(pair<string, unsigned short *>("si", psi));
+    map1.insert(pair<string, unsigned short *>("bp", pbp));
+    map2.insert(pair<string, unsigned char *>("ah", pah));
+    map2.insert(pair<string, unsigned char *>("al", pal));
+    map2.insert(pair<string, unsigned char *>("bh", pbh));
+    map2.insert(pair<string, unsigned char *>("bl", pbl));
+    map2.insert(pair<string, unsigned char *>("ch", pch));
+    map2.insert(pair<string, unsigned char *>("cl", pcl));
+    map2.insert(pair<string, unsigned char *>("dh", pdh));
+    map2.insert(pair<string, unsigned char *>("dl", pdl));
+}
+
+//Editing the string. It is useful to clear the waste of spaces in the line.
+void editStr(string &s) {
+    replace(s.begin(), s.end(), ',', ' ');
+    replace(s.begin(), s.end(), '"', '\'');
+    string::iterator new_end = unique(s.begin(), s.end(), [=](char lhs, char rhs){return (lhs == rhs) && (lhs == ' '); });
+    s.erase(new_end, s.end());
+    if(s.at(0) == ' ') s = s.substr(1, s.size()-1);
+    if(s.at(s.size()-1) == ' ') s = s.substr(0, s.size()-1);
+    if(s.find(" [") != string::npos) {
+        int index = s.find(" [");
+        if(s.at(index-2) == ' ') s.erase(s.begin() + index);
+    }
+    if(s.find("[ ") != string::npos) s.replace(s.find("[ "),2,"[");
+    if(s.find(" ]") != string::npos) s.replace(s.find(" ]"),2,"]");
+    if(s.find("' ") != string::npos) s.replace(s.find("' "),2,"'");
+    s = s + ' ';
+    if(s.find(" ' ") != string::npos) s.replace(s.find(" ' "),3,"'");
+    if(s.at(s.size()-1) == ' ') s = s.substr(0, s.size()-1);
+
+    int index = s.find('\'') + 1;
+    for(int i = 0; i < s.length(); i++){
+        unsigned char c = s.at(i);
+        if(index != i || i == 0) s.at(i) = tolower(c);
+    }
 }
