@@ -39,7 +39,7 @@ template <class regtype> void subFunc(regtype *first, string sec, bool isReg);
 template <class regtype> void movFunc(regtype *first, string sec, bool isReg);
 
 // Global variables (memory, registers and flags).
-unsigned char memory[2<<15];    // 64K memory
+unsigned char memory[2<<15];    // 64KB memory
 vector<string> lines;
 map <string, int> vars;
 map <string, int> labels;
