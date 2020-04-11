@@ -13,30 +13,31 @@ bool areDigit(string s);
 void editStr(string &s);
 void twoParameters(string inst, string first, string sec);
 void addressing(map<string, unsigned short *> &map1, map<string, unsigned char *> &map2);
+template  <typename regtype1, typename regtype2>  void mov_reg(regtype1 *first, regtype2 *sec)  ;
+template  <typename regtype1, typename regtype2>  void add_reg(regtype1 *first, regtype2 *sec)  ;
+template  <typename regtype1, typename regtype2>  void sub_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void xor_reg(regtype1 *first, regtype2 *sec)  ;
+template  <typename regtype1, typename regtype2>  void and_reg(regtype1 *first, regtype2 *sec)  ;
+template  <typename regtype1, typename regtype2>  void or_reg(regtype1 *first, regtype2 *sec)  ;
+template  <typename regtype1, typename regtype2>  void cmp_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void shl_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void shr_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void rcl_reg(regtype1 *first, regtype2 *sec)  ;
 template  <typename regtype1, typename regtype2>  void rcr_reg(regtype1 *first, regtype2 *sec)  ;
-template  <typename regtype1, typename regtype2>  void and_reg(regtype1 *first, regtype2 *sec)  ;
-template  <typename regtype1, typename regtype2>  void or_reg(regtype1 *first, regtype2 *sec)  ;
-template  <typename regtype1, typename regtype2>  void cmp_reg(regtype1 *first, regtype2 *sec)  ;
-template  <typename regtype1, typename regtype2>  void add_reg(regtype1 *first, regtype2 *sec)  ;
-template  <typename regtype1, typename regtype2>  void sub_reg(regtype1 *first, regtype2 *sec)  ;
-template  <typename regtype1, typename regtype2>  void mov_reg(regtype1 *first, regtype2 *sec)  ;
 template <class datatype> void mul_reg(datatype y);
 template <class datatype> void div_reg(datatype y);
+
+template <class regtype> void movFunc(regtype *first, string sec, bool isReg);
+template <class regtype> void addFunc(regtype *first, string sec, bool isReg);
+template <class regtype> void subFunc(regtype *first, string sec, bool isReg);
 template <class regtype> void xorFunc(regtype *first, string sec, bool isReg);
+template <class regtype> void andFunc(regtype *first, string sec, bool isReg);
+template <class regtype> void orFunc(regtype *first, string sec, bool isReg);
+template <class regtype> void cmpFunc(regtype *first, string sec, bool isReg);
 template <class regtype> void shlFunc(regtype *first, string sec, bool isReg);
 template <class regtype> void shrFunc(regtype *first, string sec, bool isReg);
 template <class regtype> void rclFunc(regtype *first, string sec, bool isReg);
 template <class regtype> void rcrFunc(regtype *first, string sec, bool isReg);
-template <class regtype> void andFunc(regtype *first, string sec, bool isReg);
-template <class regtype> void orFunc(regtype *first, string sec, bool isReg);
-template <class regtype> void cmpFunc(regtype *first, string sec, bool isReg);
-template <class regtype> void addFunc(regtype *first, string sec, bool isReg);
-template <class regtype> void subFunc(regtype *first, string sec, bool isReg);
-template <class regtype> void movFunc(regtype *first, string sec, bool isReg);
 
 // Global variables (memory, registers and flags).
 unsigned char memory[2<<15];    // 64KB memory
@@ -1469,147 +1470,115 @@ void twoParameters(string inst, string first, string sec) {
     }
 }
 
-//Processing the right rotation operation.
+//Processing the moving(replacement) operation.
 template  <typename regtype1, typename regtype2>
-void rcr_reg(regtype1 *first, regtype2 *sec){
-    int count = *sec;
-    *first = (*first >> (count-1)|(*first << (sizeof(*first)*8 - (count-1))));
-    cf = (*first & 1) != 0;
-    *first = (*first >> 1|(*first << (sizeof(*first)*8 - 1)));
-    sf = (*first & (1 << sizeof(*first)*8 - 1));
+void mov_reg(regtype1 *first, regtype2 *sec) {
+    *first = *sec;
 }
 
-//Handling the right rotation instruction by using "rcr_reg" function.
-template  <typename regtype>
-void rcrFunc(regtype *first, string sec, bool isReg){
-    if(sec == "cl"){
-        rcr_reg(first, pcl);
+//Handling the moving instruction by using "mov_reg" function.
+template <class regtype>
+void movFunc(regtype *first, string sec, bool isReg){
+    if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
+        auto it = vars.find(sec + "1");
+        if (it == vars.end()) {
+            it = vars.find(sec + "2");
+            if(sizeof(*first) == 1) {
+                cout << "Error" << endl;
+                isError = true;
+                return;
+            } else {
+                *first = (unsigned short) (memory[it->second+1]*256 + memory[it->second]);
+            }
+        } else {
+            if(sizeof(*first) == 2) {
+                *first = (unsigned short) memory[it->second];
+            } else {
+                *first = memory[it->second];
+            }
+        }
+    } else if (sec == "ax") {
+        mov_reg(first, pax);
+    } else if (sec == "bx") {
+        mov_reg(first, pbx);
+    } else if (sec == "cx") {
+        mov_reg(first, pcx);
+    } else if (sec == "dx") {
+        mov_reg(first, pdx);
+    } else if (sec == "di") {
+        mov_reg(first, pdi);
+    } else if (sec == "sp") {
+        mov_reg(first, psp);
+    } else if (sec == "si") {
+        mov_reg(first, psi);
+    } else if (sec == "bp") {
+        mov_reg(first, pbp);
+    } else if (sec == "ah") {
+        mov_reg(first, pah);
+    } else if (sec == "al") {
+        mov_reg(first, pal);
+    } else if (sec == "bh") {
+        mov_reg(first, pbh);
+    } else if (sec == "bl") {
+        mov_reg(first, pbl);
+    } else if (sec == "ch") {
+        mov_reg(first, pch);
+    } else if (sec == "cl") {
+        mov_reg(first, pcl);
+    } else if (sec == "dh") {
+        mov_reg(first, pdh);
+    } else if (sec == "dl") {
+        mov_reg(first, pdl);
     }
     else if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
         if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
-        auto temp = hex2dec(sec);
-        auto *ptmp = &temp;
-        rcr_reg(first, ptmp);
-    } else if(sec.at(sec.size()-1) == 'd'){
-        sec = sec.substr(0, sec.size()-1);
-        auto temp = stoi(sec);
-        auto *ptmp = &temp;
-        rcr_reg(first, ptmp);
-    } else if(areDigit(sec)){
-        auto temp = stoi(sec);
-        auto *ptmp = &temp;
-        rcr_reg(first, ptmp);
-    } else{
-        cout << "Error" << endl;
-        isError = true;
-        return;
+        int tmp = hex2dec(sec);
+        if(sizeof(*first) == 1 && isReg && tmp > 255) {
+            cout << "Error" << endl;
+            isError = true;
+            return;
+        }else {
+            if(sizeof(*first) == 1) {
+                if(isReg) *first = tmp;
+                else {
+                    if(tmp > 255) {
+                        *first = tmp % 256;
+                        *(first+1) = tmp / 256;
+                    }
+                    else *first = tmp;
+                }
+            }
+            else *first = (unsigned short) tmp;
+        }
     }
-}
-
-//Processing the left rotation operation.
-template  <typename regtype1, typename regtype2>
-void rcl_reg(regtype1 *first, regtype2 *sec){
-    int count = *sec;
-    for(int i = 0; i < count; i++){
-        bool oldcf = cf;
-        cf = (*first & (1 << (sizeof(*first)*8 - 1))) != 0;
-        *first = *first << 1;
-        *first ^= ((-1)*oldcf ^ *first) & (1UL << 0);
+    else if (sec.at(sec.size() - 1) == '\'') {
+        unsigned char temp = sec.at(1);
+        if(sizeof(*first) == 1) *first = temp;
+        else *first = (unsigned short) temp;
     }
-    sf = (*first & (1 << sizeof(*first)*8 - 1));
-}
-
-//Handling the left rotation instruction by using "rcl_reg" function.
-template  <typename regtype>
-void rclFunc(regtype *first, string sec, bool isReg){
-    if(sec == "cl"){
-        rcl_reg(first, pcl);
-    }
-    else if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
-        if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
-        auto temp = hex2dec(sec);
-        auto *ptmp = &temp;
-        rcl_reg(first, ptmp);
-    } else if(sec.at(sec.size()-1) == 'd'){
-        sec = sec.substr(0, sec.size()-1);
-        auto temp = stoi(sec);
-        auto *ptmp = &temp;
-        rcl_reg(first, ptmp);
-    } else if(areDigit(sec)){
-        auto temp = stoi(sec);
-        auto *ptmp = &temp;
-        rcl_reg(first, ptmp);
-    } else{
-        cout << "Error" << endl;
-        isError = true;
-        return;
-    }
-}
-
-//Processing the right shifting operation.
-template  <typename regtype1, typename regtype2>
-void shr_reg(regtype1 *first, regtype2 *sec){
-    int count = *sec;
-    *first = *first >> (count-1);
-    cf = (*first & 1) != 0;
-    *first = *first >> 1;
-    sf = (*first & (1 << sizeof(*first)*8 - 1));
-}
-
-//Handling the right shifting instruction by using "shr_reg" function.
-template  <typename regtype>
-void shrFunc(regtype *first, string sec, bool isReg){
-    if(sec == "cl"){
-        shr_reg(first, pcl);
-    }
-    else if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
-        if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
-        auto temp = hex2dec(sec);
-        auto *ptmp = &temp;
-        shr_reg(first, ptmp);
-    } else if(sec.at(sec.size()-1) == 'd'){
-        sec = sec.substr(0, sec.size()-1);
-        auto temp = stoi(sec);
-        auto *ptmp = &temp;
-        shr_reg(first, ptmp);
-    } else if(areDigit(sec)){
-        auto temp = stoi(sec);
-        auto *ptmp = &temp;
-        shr_reg(first, ptmp);
-    } else{
-        cout << "Error" << endl;
-        isError = true;
-        return;
-    }
-}
-
-//Processing the left shifting operation.
-template  <typename regtype1, typename regtype2>
-void shl_reg(regtype1 *first, regtype2 *sec){
-    int count = *sec;
-    *first = *first << (count-1);
-    cf = (*first & (1 << (sizeof(*first)*8 - 1))) != 0;
-    *first = *first << 1;
-    sf = (*first & (1 << sizeof(*first)*8 - 1));
-}
-
-//Handling the left shifting instruction by using "shl_reg" function.
-template  <typename regtype>
-void shlFunc(regtype *first, string sec, bool isReg){
-    if(sec == "cl"){
-        shl_reg(first, pcl);
-    }
-    else if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
-        if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
-        auto temp = hex2dec(sec);
-        auto *ptmp = &temp;
-        shl_reg(first, ptmp);
-    } else if(sec.at(sec.size()-1) == 'd'|| areDigit(sec)) {
+    else if(sec.at(sec.size()-1) == 'd'|| areDigit(sec)) {
         if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
-        auto temp = stoi(sec);
-        auto *ptmp = &temp;
-        shl_reg(first, ptmp);
-    } else{
+        int tmp = stoi(sec);
+        if(sizeof(*first) == 1 && isReg && stoi(sec) > 255) {
+            cout << "Error" << endl;
+            isError = true;
+            return;
+        }
+        else {
+            if(sizeof(*first) == 1) {
+                if(isReg) *first = tmp;
+                else {
+                    if(tmp > 255) {
+                        *first = tmp % 256;
+                        *(first+1) = tmp / 256;
+                    }
+                    else *first = tmp;
+                }
+            }
+            else *first = (unsigned short) tmp;
+        }
+    }
+    else {
         cout << "Error" << endl;
         isError = true;
         return;
@@ -1884,121 +1853,6 @@ void subFunc(regtype *first, string sec, bool isReg){
                 auto *ptmp = &temp;
                 sub_reg(first, ptmp);
             }
-        }
-    }
-    else {
-        cout << "Error" << endl;
-        isError = true;
-        return;
-    }
-}
-
-//Processing the moving(replacement) operation.
-template  <typename regtype1, typename regtype2>
-void mov_reg(regtype1 *first, regtype2 *sec) {
-    *first = *sec;
-}
-
-//Handling the moving instruction by using "mov_reg" function.
-template <class regtype>
-void movFunc(regtype *first, string sec, bool isReg){
-    if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
-        auto it = vars.find(sec + "1");
-        if (it == vars.end()) {
-            it = vars.find(sec + "2");
-            if(sizeof(*first) == 1) {
-                cout << "Error" << endl;
-                isError = true;
-                return;
-            } else {
-                *first = (unsigned short) (memory[it->second+1]*256 + memory[it->second]);
-            }
-        } else {
-            if(sizeof(*first) == 2) {
-                *first = (unsigned short) memory[it->second];
-            } else {
-                *first = memory[it->second];
-            }
-        }
-    } else if (sec == "ax") {
-        mov_reg(first, pax);
-    } else if (sec == "bx") {
-        mov_reg(first, pbx);
-    } else if (sec == "cx") {
-        mov_reg(first, pcx);
-    } else if (sec == "dx") {
-        mov_reg(first, pdx);
-    } else if (sec == "di") {
-        mov_reg(first, pdi);
-    } else if (sec == "sp") {
-        mov_reg(first, psp);
-    } else if (sec == "si") {
-        mov_reg(first, psi);
-    } else if (sec == "bp") {
-        mov_reg(first, pbp);
-    } else if (sec == "ah") {
-        mov_reg(first, pah);
-    } else if (sec == "al") {
-        mov_reg(first, pal);
-    } else if (sec == "bh") {
-        mov_reg(first, pbh);
-    } else if (sec == "bl") {
-        mov_reg(first, pbl);
-    } else if (sec == "ch") {
-        mov_reg(first, pch);
-    } else if (sec == "cl") {
-        mov_reg(first, pcl);
-    } else if (sec == "dh") {
-        mov_reg(first, pdh);
-    } else if (sec == "dl") {
-        mov_reg(first, pdl);
-    }
-    else if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
-        if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
-        int tmp = hex2dec(sec);
-        if(sizeof(*first) == 1 && isReg && tmp > 255) {
-            cout << "Error" << endl;
-            isError = true;
-            return;
-        }else {
-            if(sizeof(*first) == 1) {
-                if(isReg) *first = tmp;
-                else {
-                    if(tmp > 255) {
-                        *first = tmp % 256;
-                        *(first+1) = tmp / 256;
-                    }
-                    else *first = tmp;
-                }
-            }
-            else *first = (unsigned short) tmp;
-        }
-    }
-    else if (sec.at(sec.size() - 1) == '\'') {
-        unsigned char temp = sec.at(1);
-        if(sizeof(*first) == 1) *first = temp;
-        else *first = (unsigned short) temp;
-    }
-    else if(sec.at(sec.size()-1) == 'd'|| areDigit(sec)) {
-        if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
-        int tmp = stoi(sec);
-        if(sizeof(*first) == 1 && isReg && stoi(sec) > 255) {
-            cout << "Error" << endl;
-            isError = true;
-            return;
-        }
-        else {
-            if(sizeof(*first) == 1) {
-                if(isReg) *first = tmp;
-                else {
-                    if(tmp > 255) {
-                        *first = tmp % 256;
-                        *(first+1) = tmp / 256;
-                    }
-                    else *first = tmp;
-                }
-            }
-            else *first = (unsigned short) tmp;
         }
     }
     else {
@@ -2553,6 +2407,153 @@ void cmpFunc(regtype *first, string sec, bool isReg){
     }
 }
 
+//Processing the left shifting operation.
+template  <typename regtype1, typename regtype2>
+void shl_reg(regtype1 *first, regtype2 *sec){
+    int count = *sec;
+    *first = *first << (count-1);
+    cf = (*first & (1 << (sizeof(*first)*8 - 1))) != 0;
+    *first = *first << 1;
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
+}
+
+//Handling the left shifting instruction by using "shl_reg" function.
+template  <typename regtype>
+void shlFunc(regtype *first, string sec, bool isReg){
+    if(sec == "cl"){
+        shl_reg(first, pcl);
+    }
+    else if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
+        if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
+        auto temp = hex2dec(sec);
+        auto *ptmp = &temp;
+        shl_reg(first, ptmp);
+    } else if(sec.at(sec.size()-1) == 'd'|| areDigit(sec)) {
+        if(sec.at(sec.size()-1) == 'd') sec = sec.substr(0,sec.size()-1);
+        auto temp = stoi(sec);
+        auto *ptmp = &temp;
+        shl_reg(first, ptmp);
+    } else{
+        cout << "Error" << endl;
+        isError = true;
+        return;
+    }
+}
+
+//Processing the right shifting operation.
+template  <typename regtype1, typename regtype2>
+void shr_reg(regtype1 *first, regtype2 *sec){
+    int count = *sec;
+    *first = *first >> (count-1);
+    cf = (*first & 1) != 0;
+    *first = *first >> 1;
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
+}
+
+//Handling the right shifting instruction by using "shr_reg" function.
+template  <typename regtype>
+void shrFunc(regtype *first, string sec, bool isReg){
+    if(sec == "cl"){
+        shr_reg(first, pcl);
+    }
+    else if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
+        if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
+        auto temp = hex2dec(sec);
+        auto *ptmp = &temp;
+        shr_reg(first, ptmp);
+    } else if(sec.at(sec.size()-1) == 'd'){
+        sec = sec.substr(0, sec.size()-1);
+        auto temp = stoi(sec);
+        auto *ptmp = &temp;
+        shr_reg(first, ptmp);
+    } else if(areDigit(sec)){
+        auto temp = stoi(sec);
+        auto *ptmp = &temp;
+        shr_reg(first, ptmp);
+    } else{
+        cout << "Error" << endl;
+        isError = true;
+        return;
+    }
+}
+
+//Processing the left rotation operation.
+template  <typename regtype1, typename regtype2>
+void rcl_reg(regtype1 *first, regtype2 *sec){
+    int count = *sec;
+    for(int i = 0; i < count; i++){
+        bool oldcf = cf;
+        cf = (*first & (1 << (sizeof(*first)*8 - 1))) != 0;
+        *first = *first << 1;
+        *first ^= ((-1)*oldcf ^ *first) & (1UL << 0);
+    }
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
+}
+
+//Handling the left rotation instruction by using "rcl_reg" function.
+template  <typename regtype>
+void rclFunc(regtype *first, string sec, bool isReg){
+    if(sec == "cl"){
+        rcl_reg(first, pcl);
+    }
+    else if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
+        if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
+        auto temp = hex2dec(sec);
+        auto *ptmp = &temp;
+        rcl_reg(first, ptmp);
+    } else if(sec.at(sec.size()-1) == 'd'){
+        sec = sec.substr(0, sec.size()-1);
+        auto temp = stoi(sec);
+        auto *ptmp = &temp;
+        rcl_reg(first, ptmp);
+    } else if(areDigit(sec)){
+        auto temp = stoi(sec);
+        auto *ptmp = &temp;
+        rcl_reg(first, ptmp);
+    } else{
+        cout << "Error" << endl;
+        isError = true;
+        return;
+    }
+}
+
+//Processing the right rotation operation.
+template  <typename regtype1, typename regtype2>
+void rcr_reg(regtype1 *first, regtype2 *sec){
+    int count = *sec;
+    *first = (*first >> (count-1)|(*first << (sizeof(*first)*8 - (count-1))));
+    cf = (*first & 1) != 0;
+    *first = (*first >> 1|(*first << (sizeof(*first)*8 - 1)));
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
+}
+
+//Handling the right rotation instruction by using "rcr_reg" function.
+template  <typename regtype>
+void rcrFunc(regtype *first, string sec, bool isReg){
+    if(sec == "cl"){
+        rcr_reg(first, pcl);
+    }
+    else if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
+        if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
+        auto temp = hex2dec(sec);
+        auto *ptmp = &temp;
+        rcr_reg(first, ptmp);
+    } else if(sec.at(sec.size()-1) == 'd'){
+        sec = sec.substr(0, sec.size()-1);
+        auto temp = stoi(sec);
+        auto *ptmp = &temp;
+        rcr_reg(first, ptmp);
+    } else if(areDigit(sec)){
+        auto temp = stoi(sec);
+        auto *ptmp = &temp;
+        rcr_reg(first, ptmp);
+    } else{
+        cout << "Error" << endl;
+        isError = true;
+        return;
+    }
+}
+
 //Processing the multiplication operation.
 template <class datatype>
 void mul_reg(datatype y){
@@ -2652,8 +2653,7 @@ void addressing(map<string, unsigned short *> &map1, map<string, unsigned char *
 
 //Editing the string. It is useful to transform each line into tokenizable format.
 void editStr(string &s) {
-    if(s == "")
-        return;
+    if(s == "") return;
     replace(s.begin(), s.end(), ',', ' ');
     replace(s.begin(), s.end(), '"', '\'');
     string::iterator new_end = unique(s.begin(), s.end(), [=](char lhs, char rhs){return (lhs == rhs) && (lhs == ' '); });
