@@ -1,26 +1,24 @@
+Test14
+=====
+
+Input:
+
+Output:
++
+
+--------------------
 code segment
-mov ax, 40d
-nop
-mov bx, var1
-push bx
-mov cx, var2
-push cx
-push ax
-pop bx
-cmp bx, 28h
-jne hey
-pop bx
-cmp sp, 0FFFCh
-je cor
-hey:
-    mov ah, 02h
-    mov dl,     'X'
-    int 21h
-cor:
+mov al, 93h
+mov ah, 0F5h
+add al, ah
+jc ex
+mov ah, 02h
+mov dl, '-'
+int 21h
+ex:
     mov ah, 02h
     mov dl, '+'
     int 21h
-int 20h
-var1 dw 10h
-var2 dw 20h
+    int 20h
 code ends
+--------------------

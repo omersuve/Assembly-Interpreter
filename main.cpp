@@ -1476,6 +1476,7 @@ void rcr_reg(regtype1 *first, regtype2 *sec){
     *first = (*first >> (count-1)|(*first << (sizeof(*first)*8 - (count-1))));
     cf = (*first & 1) != 0;
     *first = (*first >> 1|(*first << (sizeof(*first)*8 - 1)));
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
 }
 
 //Handling the right rotation instruction by using "rcr_reg" function.
@@ -1515,6 +1516,7 @@ void rcl_reg(regtype1 *first, regtype2 *sec){
         *first = *first << 1;
         *first ^= ((-1)*oldcf ^ *first) & (1UL << 0);
     }
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
 }
 
 //Handling the left rotation instruction by using "rcl_reg" function.
@@ -1551,6 +1553,7 @@ void shr_reg(regtype1 *first, regtype2 *sec){
     *first = *first >> (count-1);
     cf = (*first & 1) != 0;
     *first = *first >> 1;
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
 }
 
 //Handling the right shifting instruction by using "shr_reg" function.
@@ -1587,6 +1590,7 @@ void shl_reg(regtype1 *first, regtype2 *sec){
     *first = *first << (count-1);
     cf = (*first & (1 << (sizeof(*first)*8 - 1))) != 0;
     *first = *first << 1;
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
 }
 
 //Handling the left shifting instruction by using "shl_reg" function.
@@ -1618,9 +1622,28 @@ void add_reg(regtype1 *first, regtype2 *sec) {
     int tmp = *first + *sec;
     if(tmp >= pow(256, sizeof(*first))) cf = 1;
     else cf = 0;
+    if (((*first) & (1 << sizeof(*first)*8 - 1)) == ((*sec) & (1 << sizeof(*sec)*8 - 1))){
+        if((tmp & (1 << sizeof(*first)*8 - 1)) != ((*sec) & (1 << sizeof(*sec)*8 - 1))){
+            of = 1;
+        }else
+            of = 0;
+    }
+    else{
+        of = 0;
+    }
+    if (sizeof(*first) == 1 && sizeof(*sec) == 1){
+        if(tmp & (1 << 4) == 1 && *first & (1 << 4) != 1){
+            af = 1;
+        }else
+            af = 0;
+    }
+    else{
+        af = 0;
+    }
     *first += *sec;
     if(*first == 0) zf = 1;
     else zf = 0;
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
 }
 
 //Handling the addition instruction by using "add_reg" function.
@@ -1749,6 +1772,7 @@ void sub_reg(regtype1 *first, regtype2 *sec) {
     *first -= *sec;
     if(*first == 0) zf = 1;
     else zf = 0;
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
 }
 
 //Handling the subtraction instruction by using "sub_reg" function.
@@ -1996,6 +2020,7 @@ void xor_reg(regtype1 *first, regtype2 *sec) {
     *first = *first ^ *sec;
     if(*first == 0) zf = 1;
     else zf = 0;
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
 }
 
 //Handling the logical xor instruction by using "xor_reg" function.
@@ -2128,6 +2153,7 @@ void and_reg(regtype1 *first, regtype2 *sec) {
     *first = *first & *sec;
     if(*first == 0) zf = 1;
     else zf = 0;
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
 }
 
 //Handling the logical and instruction by using "and_reg" function.
@@ -2260,6 +2286,7 @@ void or_reg(regtype1 *first, regtype2 *sec) {
     *first = *first | *sec;
     if(*first == 0) zf = 1;
     else zf = 0;
+    sf = (*first & (1 << sizeof(*first)*8 - 1));
 }
 
 //Handling the logical or instruction by using "or_reg" function.
@@ -2625,6 +2652,8 @@ void addressing(map<string, unsigned short *> &map1, map<string, unsigned char *
 
 //Editing the string. It is useful to transform each line into tokenizable format.
 void editStr(string &s) {
+    if(s == "")
+        return;
     replace(s.begin(), s.end(), ',', ' ');
     replace(s.begin(), s.end(), '"', '\'');
     string::iterator new_end = unique(s.begin(), s.end(), [=](char lhs, char rhs){return (lhs == rhs) && (lhs == ' '); });
