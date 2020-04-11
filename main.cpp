@@ -38,7 +38,7 @@ template <class regtype> void addFunc(regtype *first, string sec, bool isReg);
 template <class regtype> void subFunc(regtype *first, string sec, bool isReg);
 template <class regtype> void movFunc(regtype *first, string sec, bool isReg);
 
-// global variables ( memory, registers and flags )
+// Global variables (memory, registers and flags).
 unsigned char memory[2<<15];    // 64K memory
 vector<string> lines;
 map <string, int> vars;
@@ -61,7 +61,7 @@ bool     cf       ;              // carry flag
 
 bool isError = false;
 
-// initialize pointers
+// Initialize pointers to registers.
 unsigned short *pax = &ax ;
 unsigned short *pbx = &bx ;
 unsigned short *pcx = &cx ;
@@ -71,7 +71,7 @@ unsigned short *psp = &sp ;
 unsigned short *psi = &si ;
 unsigned short *pbp = &bp ;
 
-// note that x86 uses little endian, that is, least significant byte is stored in lowest byte
+// Note that x86 uses little endian, that is, least significant byte is stored in lowest byte.
 unsigned char *pah = (unsigned char *) ( ( (unsigned char *) &ax) + 1) ;
 unsigned char *pal = (unsigned char *) &ax  ;
 unsigned char *pbh = (unsigned char *) ( ( (unsigned char *) &bx) + 1) ;
@@ -81,7 +81,7 @@ unsigned char *pcl = (unsigned char *) &cx  ;
 unsigned char *pdh = (unsigned char *) ( ( (unsigned char *) &dx) + 1) ;
 unsigned char *pdl = (unsigned char *) &dx  ;
 
-// the maps include registers that point an adress
+// The maps include registers and their pointers.
 map <string, unsigned short*> regw;
 map <string, unsigned char*> regb;
 
@@ -92,12 +92,12 @@ int main(int argc, char* argv[]) {
     vector<string> codelines;
     int memoryIdx = 0;
 
-    //Reading Inputs from the file
+    //Reading input from the file.
     ifstream infile(argv[1]);
     string line;
     while (getline(infile, line)) lines.push_back(line);
 
-    //Eliminating the lines not between "code segment" and "code ends"
+    //Eliminating the lines that are not between "code segment" and "code ends".
     bool cont = false;
     for (int i = 0; i < lines.size(); i++) {
         editStr(lines[i]);
@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
     }
     memoryIdx += 6;
 
-    //Reading variables that are exist after the instruction "int20h"
+    //Reading variables that are located below the instruction "int 20h".
     for (int j = i + 1; j < codelines.size(); j++) {
         string var;
         string type;
@@ -257,7 +257,7 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    //The main loop of the program that processes each meaningful line
+    //The main loop of the program that processes the input line by line between "code segment" and "code ends".
     for (int i = 0; i < codelines.size(); i++) {
         if (isError) break;
         stringstream check1(codelines[i]);
@@ -620,20 +620,16 @@ int main(int argc, char* argv[]) {
             twoParameters("shr", first, sec);
         } else if (instruction == "push") {
             if(first == "ax"){
-                memory[sp] = *pal;
-                memory[sp+1] = *pah;
+                memory[sp] = ax;
                 sp -= 2;
             } else if(first == "bx"){
-                memory[sp] = *pbl;
-                memory[sp+1] = *pbh;
+                memory[sp] = bx;
                 sp -= 2;
             } else if(first == "cx"){
-                memory[sp] = *pcl;
-                memory[sp+1] = *pch;
+                memory[sp] = cx;
                 sp -= 2;
             } else if(first == "dx"){
-                memory[sp] = *pdl;
-                memory[sp+1] = *pdh;
+                memory[sp] = dx;
                 sp -= 2;
             } else if(first == "di"){
                 memory[sp] = di;
@@ -655,20 +651,16 @@ int main(int argc, char* argv[]) {
         } else if (instruction == "pop") {
             if(first == "ax"){
                 sp += 2;
-                *pal = memory[sp];
-                *pah = memory[sp+1];
+                *pax = memory[sp];
             } else if(first == "bx"){
                 sp += 2;
-                *pbl = memory[sp];
-                *pbh = memory[sp+1];
+                *pbx = memory[sp];
             } else if(first == "cx"){
                 sp += 2;
-                *pcl = memory[sp];
-                *pch = memory[sp+1];
+                *pcx = memory[sp];
             } else if(first == "dx"){
                 sp += 2;
-                *pdl = memory[sp];
-                *pdh = memory[sp+1];
+                *pdx = memory[sp];
             } else if(first == "di"){
                 sp += 2;
                 *pdi = memory[sp];
@@ -850,7 +842,7 @@ int main(int argc, char* argv[]) {
     }
 }
 
-//Handling all instructions having two parameters
+//Handling all instructions which have two parameters
 void twoParameters(string inst, string first, string sec) {
     if(first.find('[') != string::npos) {
         if(first.at(0) != '[') first = first.substr(2, first.size()-3);
@@ -1128,13 +1120,24 @@ void twoParameters(string inst, string first, string sec) {
                         auto it4 = regb.find(sec);
                         if(it4 != regb.end()) {
                             if(it4->second == pcl) {
-                                //todo
+                                auto *pmem = reinterpret_cast<unsigned short*>(&memory[it->second]);
+                                if(inst == "shl") shl_reg(pmem, pcl);
+                                else if(inst == "shr") shr_reg(pmem, pcl);
+                                else if(inst == "rcl") rcl_reg(pmem, pcl);
+                                else if(inst == "rcr") rcr_reg(pmem, pcl);
+                                else {
+                                    cout << "Error" << endl;
+                                    isError = true;
+                                    return;
+                                }
                             }
-                            cout << "Error" << endl;
-                            isError = true;
-                            return;
+                            else {
+                                cout << "Error" << endl;
+                                isError = true;
+                                return;
+                            }
                         }
-                        if(it3 == regw.end()) {
+                        else if(it3 == regw.end()) {
                             if (sec.at(sec.size() - 1) == 'h' || sec.at(0) == '0') {
                                 if(sec.at(sec.size() - 1) == 'h' || sec.at(sec.size() - 1) == 'd') sec = sec.substr(0, sec.size() - 1);
                                 if(hex2dec(sec) > 65535) {
@@ -1466,7 +1469,7 @@ void twoParameters(string inst, string first, string sec) {
     }
 }
 
-//Processing the right rotation operation
+//Processing the right rotation operation.
 template  <typename regtype1, typename regtype2>
 void rcr_reg(regtype1 *first, regtype2 *sec){
     int count = *sec;
@@ -1475,7 +1478,7 @@ void rcr_reg(regtype1 *first, regtype2 *sec){
     *first = (*first >> 1|(*first << (sizeof(*first)*8 - 1)));
 }
 
-//Handling the right rotation instruction by using "rcr_reg" function
+//Handling the right rotation instruction by using "rcr_reg" function.
 template  <typename regtype>
 void rcrFunc(regtype *first, string sec, bool isReg){
     if(sec == "cl"){
@@ -1502,7 +1505,7 @@ void rcrFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-//Processing the left rotation operation
+//Processing the left rotation operation.
 template  <typename regtype1, typename regtype2>
 void rcl_reg(regtype1 *first, regtype2 *sec){
     int count = *sec;
@@ -1514,7 +1517,7 @@ void rcl_reg(regtype1 *first, regtype2 *sec){
     }
 }
 
-//Handling the left rotation instruction by using "rcl_reg" function
+//Handling the left rotation instruction by using "rcl_reg" function.
 template  <typename regtype>
 void rclFunc(regtype *first, string sec, bool isReg){
     if(sec == "cl"){
@@ -1541,7 +1544,7 @@ void rclFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-//Processing the right shifting operation
+//Processing the right shifting operation.
 template  <typename regtype1, typename regtype2>
 void shr_reg(regtype1 *first, regtype2 *sec){
     int count = *sec;
@@ -1550,7 +1553,7 @@ void shr_reg(regtype1 *first, regtype2 *sec){
     *first = *first >> 1;
 }
 
-//Handling the right shifting instruction by using "shr_reg" function
+//Handling the right shifting instruction by using "shr_reg" function.
 template  <typename regtype>
 void shrFunc(regtype *first, string sec, bool isReg){
     if(sec == "cl"){
@@ -1577,7 +1580,7 @@ void shrFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-//Processing the left shifting operation
+//Processing the left shifting operation.
 template  <typename regtype1, typename regtype2>
 void shl_reg(regtype1 *first, regtype2 *sec){
     int count = *sec;
@@ -1586,7 +1589,7 @@ void shl_reg(regtype1 *first, regtype2 *sec){
     *first = *first << 1;
 }
 
-//Handling the left shifting instruction by using "shl_reg" function
+//Handling the left shifting instruction by using "shl_reg" function.
 template  <typename regtype>
 void shlFunc(regtype *first, string sec, bool isReg){
     if(sec == "cl"){
@@ -1609,7 +1612,7 @@ void shlFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-//Processing the addition operation
+//Processing the addition operation.
 template  <typename regtype1, typename regtype2>
 void add_reg(regtype1 *first, regtype2 *sec) {
     int tmp = *first + *sec;
@@ -1620,7 +1623,7 @@ void add_reg(regtype1 *first, regtype2 *sec) {
     else zf = 0;
 }
 
-//Handling the addition instruction by using "add_reg" function
+//Handling the addition instruction by using "add_reg" function.
 template <class regtype>
 void addFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -1738,7 +1741,7 @@ void addFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-//Processing the addition operation
+//Processing the subtraction operation.
 template  <typename regtype1, typename regtype2>
 void sub_reg(regtype1 *first, regtype2 *sec) {
     if(*sec > *first) cf = 1;
@@ -1748,7 +1751,7 @@ void sub_reg(regtype1 *first, regtype2 *sec) {
     else zf = 0;
 }
 
-//Handling the subtraction instruction by using "sub_reg" function
+//Handling the subtraction instruction by using "sub_reg" function.
 template <class regtype>
 void subFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -1866,13 +1869,13 @@ void subFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-//Processing the moving operation
+//Processing the moving(replacement) operation.
 template  <typename regtype1, typename regtype2>
 void mov_reg(regtype1 *first, regtype2 *sec) {
     *first = *sec;
 }
 
-//Handling the moving instruction by using "mov_reg" function
+//Handling the moving instruction by using "mov_reg" function.
 template <class regtype>
 void movFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -1981,7 +1984,7 @@ void movFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-//Processing the xor operation
+//Processing the logical xor operation.
 template  <typename regtype1, typename regtype2>
 void xor_reg(regtype1 *first, regtype2 *sec) {
     if(sizeof(*first) != sizeof(*sec)) {
@@ -1995,7 +1998,7 @@ void xor_reg(regtype1 *first, regtype2 *sec) {
     else zf = 0;
 }
 
-//Handling the xor instruction by using "xor_reg" function
+//Handling the logical xor instruction by using "xor_reg" function.
 template <class regtype>
 void xorFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -2113,7 +2116,7 @@ void xorFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-//Processing the and operation
+//Processing the logical and operation.
 template  <typename regtype1, typename regtype2>
 void and_reg(regtype1 *first, regtype2 *sec) {
     if(sizeof(*first) != sizeof(*sec)) {
@@ -2127,7 +2130,7 @@ void and_reg(regtype1 *first, regtype2 *sec) {
     else zf = 0;
 }
 
-//Handling the and instruction by using "and_reg" function
+//Handling the logical and instruction by using "and_reg" function.
 template <class regtype>
 void andFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -2245,7 +2248,7 @@ void andFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-//Processing the or operation
+//Processing the logical or operation.
 template  <typename regtype1, typename regtype2>
 void or_reg(regtype1 *first, regtype2 *sec) {
     if(sizeof(*first) != sizeof(*sec)) {
@@ -2259,7 +2262,7 @@ void or_reg(regtype1 *first, regtype2 *sec) {
     else zf = 0;
 }
 
-//Handling the or instruction by using "or_reg" function
+//Handling the logical or instruction by using "or_reg" function.
 template <class regtype>
 void orFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -2377,7 +2380,7 @@ void orFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-//Processing the compare operation
+//Processing the compare operation.
 template  <typename regtype1, typename regtype2>
 void cmp_reg(regtype1 *first, regtype2 *sec) {
     int result;
@@ -2405,7 +2408,7 @@ void cmp_reg(regtype1 *first, regtype2 *sec) {
     }
 }
 
-//Handling the compare instruction by using "cmp_reg" function
+//Handling the compare instruction by using "cmp_reg" function.
 template <class regtype>
 void cmpFunc(regtype *first, string sec, bool isReg){
     if (vars.count((sec + "1")) || vars.count((sec + "2"))) {
@@ -2523,7 +2526,7 @@ void cmpFunc(regtype *first, string sec, bool isReg){
     }
 }
 
-//Processing the multiplication operation
+//Processing the multiplication operation.
 template <class datatype>
 void mul_reg(datatype y){
     if (sizeof(y) == 1){
@@ -2554,7 +2557,7 @@ void mul_reg(datatype y){
     }
 }
 
-//Processing the division operation
+//Processing the division operation.
 template <class datatype>
 void div_reg(datatype y){
     if(sizeof(y) == 1) {
@@ -2576,7 +2579,7 @@ void div_reg(datatype y){
     }
 }
 
-//Having a string parameter that consist of a hexadecimal number in order to change it to a decimal number
+//Taking a string parameter that consist of a hexadecimal number and returning the corresponding decimal number.
 int hex2dec(string hex) {
     int result = 0;
     for (int i=0; i<hex.length(); i++) {
@@ -2591,7 +2594,7 @@ int hex2dec(string hex) {
     return result;
 }
 
-//Checking whether the string consists of digits or not
+//Checking whether the string consists entirely of decimal digits or not.
 bool areDigit(string s) {
     for (int i=0; i< s.length(); i++) {
         if (s[i] >= 48 && s[i] <= 57) continue;
@@ -2600,7 +2603,7 @@ bool areDigit(string s) {
     return true;
 }
 
-//Inserting address for each register in order to access the registers easily
+//Inserting address for each register in order to access the registers easily.
 void addressing(map<string, unsigned short *> &map1, map<string, unsigned char *> &map2) {
     map1.insert(pair<string, unsigned short *>("ax", pax));
     map1.insert(pair<string, unsigned short *>("bx", pbx));
@@ -2620,7 +2623,7 @@ void addressing(map<string, unsigned short *> &map1, map<string, unsigned char *
     map2.insert(pair<string, unsigned char *>("dl", pdl));
 }
 
-//Editing the string. It is useful to clear the waste of spaces in the line.
+//Editing the string. It is useful to transform each line into tokenizable format.
 void editStr(string &s) {
     replace(s.begin(), s.end(), ',', ' ');
     replace(s.begin(), s.end(), '"', '\'');
