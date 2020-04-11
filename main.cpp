@@ -298,18 +298,28 @@ int main(int argc, char* argv[]) {
                                         isError = true;
                                         return 0;
                                     }
-                                    memory[hex2dec(first)] = it->second;
+                                    if(desType == 'w') memory[hex2dec(first)+1] = it->second + 1;
+                                    memory[hex2dec(first)] = memory[it->second];
                                 } else {
-                                    if (first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
-                                    if (stoi(first) > 65535) {
-                                        cout << "Error" << endl;
-                                        isError = true;
-                                        return 0;
+                                    if (first.at(first.size() - 1) == 'd' || areDigit(first)) {
+                                        if (first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
+                                        if (stoi(first) > 65535) {
+                                            cout << "Error" << endl;
+                                            isError = true;
+                                            return 0;
+                                        }
+                                        if(desType == 'w') memory[hex2dec(first)+1] = it->second + 1;
+                                        memory[hex2dec(first)] = it->second;
                                     }
-                                    memory[stoi(first)] = it->second;
                                 }
-                            } else memory[*it2->second] = it->second;
-                        } else memory[*it1->second] = it->second;
+                            } else {
+                                if(desType == 'w') memory[(*it2->second)+1] = it->second + 1;
+                                memory[*it2->second] = it->second;
+                            }
+                        } else {
+                            if(desType == 'w') memory[(*it1->second)+1] = it->second + 1;
+                            memory[*it1->second] = it->second;
+                        }
                     } else {
                         if (vars.count((first + "1")) || vars.count((first + "2"))) {
                             auto it0 = vars.find(first + "1");
@@ -352,6 +362,8 @@ int main(int argc, char* argv[]) {
                                 return 0;
                             }
                             memory[hex2dec(first)]++;
+                            if(memory[hex2dec(first)] == 0) zf = 1;
+                            else zf = 0;
                         } else {
                             if (first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                             if (stoi(first) > 65535) {
@@ -360,14 +372,32 @@ int main(int argc, char* argv[]) {
                                 return 0;
                             }
                             memory[stoi(first)]++;
+                            if(memory[stoi(first)] == 0) zf = 1;
+                            else zf = 0;
                         }
-                    } else memory[*it2->second]++;
-                } else memory[*it1->second]++;
+                    } else {
+                        memory[*it2->second]++;
+                        if(memory[*it2->second] == 0) zf = 1;
+                        else zf = 0;
+                    }
+                } else {
+                    memory[*it1->second]++;
+                    if(memory[*it1->second] == 0) zf = 1;
+                    else zf = 0;
+                }
             } else {
                 auto it1 = regw.find(first);
                 auto it2 = regb.find(first);
-                if (it1 == regw.end()) (*it2->second)++;
-                else (*it1->second)++;
+                if (it1 == regw.end()) {
+                    (*it2->second)++;
+                    if(*it2->second == 0) zf = 1;
+                    else zf = 0;
+                }
+                else {
+                    (*it1->second)++;
+                    if(*it1->second == 0) zf = 1;
+                    else zf = 0;
+                }
             }
         } else if (instruction == "dec") {
             if (first.find('[') != string::npos) {
@@ -384,6 +414,8 @@ int main(int argc, char* argv[]) {
                                 return 0;
                             }
                             memory[hex2dec(first)]--;
+                            if(memory[hex2dec(first)] == 0) zf = 1;
+                            else zf = 0;
                         } else {
                             if (first.at(first.size() - 1) == 'd') first = first.substr(0, first.size() - 1);
                             if (stoi(first) > 65535) {
@@ -392,14 +424,33 @@ int main(int argc, char* argv[]) {
                                 return 0;
                             }
                             memory[stoi(first)]--;
+                            if(memory[stoi(first)] == 0) zf = 1;
+                            else zf = 0;
                         }
-                    } else memory[*it2->second]--;
-                } else memory[*it1->second]--;
-            } else {
+                    } else {
+                        memory[*it2->second]--;
+                        if(memory[*it2->second] == 0) zf = 1;
+                        else zf = 0;
+                    }
+                } else {
+                    memory[*it1->second]--;
+                    if(memory[*it1->second] == 0) zf = 1;
+                    else zf = 0;
+                }
+            }
+            else {
                 auto it1 = regw.find(first);
                 auto it2 = regb.find(first);
-                if (it1 == regw.end()) (*it2->second)--;
-                else (*it1->second)--;
+                if (it1 == regw.end()) {
+                    (*it2->second)--;
+                    if(*it2->second == 0) zf = 1;
+                    else zf = 0;
+                }
+                else {
+                    (*it1->second)--;
+                    if(*it1->second == 0) zf = 1;
+                    else zf = 0;
+                }
             }
         } else if (instruction == "mul") {
             if (first == "ax") {
@@ -852,32 +903,32 @@ void twoParameters(string inst, string first, string sec) {
             }
             else {
                 unsigned char *ptmp = &memory[*it2->second];
-                if(inst == "xor") xorFunc(ptmp, sec, true);
-                else if(inst == "and") andFunc(ptmp, sec, true);
-                else if(inst == "or") orFunc(ptmp, sec, true);
-                else if(inst == "cmp") cmpFunc(ptmp, sec, true);
-                else if(inst == "add") addFunc(ptmp, sec, true);
-                else if(inst == "sub") subFunc(ptmp, sec, true);
-                else if(inst == "mov") movFunc(ptmp, sec, true);
-                else if(inst == "shl") shlFunc(ptmp, sec, true);
-                else if(inst == "shr") shrFunc(ptmp, sec, true);
-                else if(inst == "rcl") rclFunc(ptmp, sec, true);
-                else if(inst == "rcr") rcrFunc(ptmp, sec, true);
+                if(inst == "xor") xorFunc(ptmp, sec, false);
+                else if(inst == "and") andFunc(ptmp, sec, false);
+                else if(inst == "or") orFunc(ptmp, sec, false);
+                else if(inst == "cmp") cmpFunc(ptmp, sec, false);
+                else if(inst == "add") addFunc(ptmp, sec, false);
+                else if(inst == "sub") subFunc(ptmp, sec, false);
+                else if(inst == "mov") movFunc(ptmp, sec, false);
+                else if(inst == "shl") shlFunc(ptmp, sec, false);
+                else if(inst == "shr") shrFunc(ptmp, sec, false);
+                else if(inst == "rcl") rclFunc(ptmp, sec, false);
+                else if(inst == "rcr") rcrFunc(ptmp, sec, false);
             }
         }
         else {
             unsigned char *ptmp = &memory[*it1->second];
-            if(inst == "xor") xorFunc(ptmp, sec, true);
-            else if(inst == "and") andFunc(ptmp, sec, true);
-            else if(inst == "or") orFunc(ptmp, sec, true);
-            else if(inst == "cmp") cmpFunc(ptmp, sec, true);
-            else if(inst == "add") addFunc(ptmp, sec, true);
-            else if(inst == "sub") subFunc(ptmp, sec, true);
-            else if(inst == "mov") movFunc(ptmp, sec, true);
-            else if(inst == "shl") shlFunc(ptmp, sec, true);
-            else if(inst == "shr") shrFunc(ptmp, sec, true);
-            else if(inst == "rcl") rclFunc(ptmp, sec, true);
-            else if(inst == "rcr") rcrFunc(ptmp, sec, true);
+            if(inst == "xor") xorFunc(ptmp, sec, false);
+            else if(inst == "and") andFunc(ptmp, sec, false);
+            else if(inst == "or") orFunc(ptmp, sec, false);
+            else if(inst == "cmp") cmpFunc(ptmp, sec, false);
+            else if(inst == "add") addFunc(ptmp, sec, false);
+            else if(inst == "sub") subFunc(ptmp, sec, false);
+            else if(inst == "mov") movFunc(ptmp, sec, false);
+            else if(inst == "shl") shlFunc(ptmp, sec, false);
+            else if(inst == "shr") shrFunc(ptmp, sec, false);
+            else if(inst == "rcl") rclFunc(ptmp, sec, false);
+            else if(inst == "rcr") rcrFunc(ptmp, sec, false);
         }
     }
     else if(sec.find('[') != string::npos) {
@@ -2455,7 +2506,7 @@ void editStr(string &s) {
     s.erase(new_end, s.end());
     if(s.at(0) == ' ') s = s.substr(1, s.size()-1);
     if(s.at(s.size()-1) == ' ') s = s.substr(0, s.size()-1);
-    while(s.find(" [") != string::npos) {
+    if(s.find(" [") != string::npos) {
         int index = s.find(" [");
         if(s.at(index-2) == ' ') s.erase(s.begin() + index);
     }
@@ -2465,30 +2516,11 @@ void editStr(string &s) {
     s = s + ' ';
     if(s.find(" ' ") != string::npos) s.replace(s.find(" ' "),3,"'");
     if(s.at(s.size()-1) == ' ') s = s.substr(0, s.size()-1);
-}
 
-template <class datatype>
-void print_bits(datatype x)
-{
-    int i;
-
-    for(i=8*sizeof(x)-1; i>=0; i--) {
-        (x & (1 << i)) ? putchar('1') : putchar('0');
-    }
-    cout << "" << endl;
-}
-
-template <class datatype>
-void hexToArray(unsigned char arr[], datatype x, int index){
-    int tmp = x;
-    if (sizeof(x) == 1){
-        auto *rep = (unsigned char *)&tmp;
-        arr[index] = rep[0];
-    }
-    else{
-        auto *rep = (unsigned char *)&tmp;
-        arr[index] = rep[1];
-        arr[index+1] = rep[0];
+    int index = s.find('\'') + 1;
+    for(int i = 0; i < s.length(); i++){
+        unsigned char c = s.at(i);
+        if(index != i || i == 0) s.at(i) = tolower(c);
     }
 }
 
@@ -2543,14 +2575,6 @@ void div_reg(datatype y){
     }
 }
 
-template <class datatype>
-void print_hex(datatype x)
-{
-    if (sizeof(x) == 1)
-        printf("%02x\n",x);
-    else
-        printf("%04x\n",x);
-}
 int hex2dec(string hex) {
     int result = 0;
     for (int i=0; i<hex.length(); i++) {
