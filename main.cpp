@@ -106,6 +106,7 @@ int main(int argc, char* argv[]) {
             cont = true;
             continue;
         } else if (lines[i] == "code ends") cont = false;
+        if(lines[i].size() == 0) continue;
         if (cont) codelines.push_back(lines[i]);
     }
 
